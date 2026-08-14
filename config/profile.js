@@ -13,7 +13,9 @@ module.exports = {
     { label: 'GitHub', url: 'https://github.com/thabonkosi' },
     { label: 'Website', url: 'https://tapshare.app' },
   ],
-  countApiKey: 'tapshare-thabo',
+  countApiKey: process.env.COUNT_API_KEY || 'tapshare-thabo',
   // Serverless vCard endpoint URL for QR code scanning & NFC tag writing
-  cardUrl: 'https://tapshare-scanned.vercel.app/api/card',
+  cardUrl:
+    process.env.CARD_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api/card` : 'https://tapshare-scanned.vercel.app/api/card'),
 };

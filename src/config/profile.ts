@@ -31,6 +31,8 @@ export const PROFILE_CONFIG: ProfileConfig = {
     { label: 'GitHub', url: 'https://github.com/thabonkosi' },
     { label: 'Website', url: 'https://tapshare.app' },
   ],
-  countApiKey: 'tapshare-thabo',
-  cardUrl: 'https://tapshare-scanned.vercel.app/api/card',
+  countApiKey: process.env.EXPO_PUBLIC_COUNT_API_KEY || 'tapshare-thabo',
+  cardUrl:
+    process.env.EXPO_PUBLIC_CARD_URL ||
+    'https://tapshare-scanned.vercel.app/api/card',
 };
