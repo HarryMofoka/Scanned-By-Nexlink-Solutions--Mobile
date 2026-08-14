@@ -29,9 +29,10 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
 
   return (
     <View style={styles.container}>
-      <HeaderNav title="Write NFC tag" onBack={() => navigation.goBack()} />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav title="Write NFC tag" onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* State 1: Active Writing View */}
         {currentState === 'writing' && (
           <View style={styles.stateWrapper}>
@@ -206,6 +207,7 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
           </View>
         </View>
       </ScrollView>
+      </View>
     </View>
   );
 };
@@ -214,6 +216,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   scrollContent: {
     paddingHorizontal: SPACING.lg,

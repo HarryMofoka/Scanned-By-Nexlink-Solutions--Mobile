@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { DualCardLogo } from '../components/DualCardLogo';
@@ -7,11 +8,12 @@ import { CustomButton } from '../components/CustomButton';
 
 export const GetStartedScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+      <View style={styles.responsiveWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         {/* Top Logo */}
         <View style={styles.logoWrapper}>
           <DualCardLogo size={70} />
@@ -92,7 +94,8 @@ export const GetStartedScreen: React.FC<{ navigation: any }> = ({ navigation }) 
           <View style={styles.pageDot} />
         </View>
       </View>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -100,6 +103,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   scrollContent: {
     paddingHorizontal: SPACING.lg,

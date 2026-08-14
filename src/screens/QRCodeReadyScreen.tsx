@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
@@ -11,9 +12,10 @@ export const QRCodeReadyScreen: React.FC<{ navigation: any }> = ({ navigation })
   const profileUrl = `https://tapshare.app/p/${user.id || 'a7f3k9'}`;
 
   return (
-    <View style={styles.container}>
-      {/* Decorative Confetti Background Dots */}
-      <View style={styles.confettiLayer} pointerEvents="none">
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+      <View style={styles.responsiveWrapper}>
+        {/* Decorative Confetti Background Dots */}
+        <View style={styles.confettiLayer} pointerEvents="none">
         <View style={[styles.confettiBit, { top: 40, left: 50, backgroundColor: COLORS.coral, transform: [{ rotate: '20deg' }] }]} />
         <View style={[styles.confettiBit, { top: 70, right: 60, backgroundColor: COLORS.periwinkle, transform: [{ rotate: '-15deg' }] }]} />
         <View style={[styles.confettiBit, { top: 120, left: 80, backgroundColor: COLORS.periwinkle }]} />
@@ -64,7 +66,8 @@ export const QRCodeReadyScreen: React.FC<{ navigation: any }> = ({ navigation })
           variant="primary"
         />
       </View>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -72,6 +75,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   confettiLayer: {
     ...StyleSheet.absoluteFill,

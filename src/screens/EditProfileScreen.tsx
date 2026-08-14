@@ -51,11 +51,12 @@ export const EditProfileScreen: React.FC<{ navigation: any }> = ({ navigation })
 
   return (
     <View style={styles.container}>
-      <HeaderNav
-        title="Edit profile"
-        onBack={() => navigation.goBack()}
-        rightTextAction={{ label: 'Save', onPress: handleSave }}
-      />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav
+          title="Edit profile"
+          onBack={() => navigation.goBack()}
+          rightTextAction={{ label: 'Save', onPress: handleSave }}
+        />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Name Input */}
@@ -125,6 +126,7 @@ export const EditProfileScreen: React.FC<{ navigation: any }> = ({ navigation })
           <Text style={styles.deleteCardText}>Delete my card</Text>
         </TouchableOpacity>
       </ScrollView>
+      </View>
 
       {/* Add Link Modal */}
       <AddLinkModal
@@ -142,6 +144,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   scrollContent: {
     paddingHorizontal: SPACING.lg,

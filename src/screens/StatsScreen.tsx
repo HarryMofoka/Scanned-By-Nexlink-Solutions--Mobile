@@ -21,26 +21,27 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <HeaderNav
-        title="Statistics"
-        onBack={() => navigation.goBack()}
-        rightAction={
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity style={styles.topHeaderBtn}>
-              <Feather name="bell" size={18} color="#FFFFFF" />
-              <View style={styles.bellDot} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.topHeaderBtn}
-              onPress={() => navigation.navigate('Settings')}
-            >
-              <Feather name="settings" size={18} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        }
-      />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav
+          title="Statistics"
+          onBack={() => navigation.goBack()}
+          rightAction={
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity style={styles.topHeaderBtn}>
+                <Feather name="bell" size={18} color="#FFFFFF" />
+                <View style={styles.bellDot} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.topHeaderBtn}
+                onPress={() => navigation.navigate('Settings')}
+              >
+                <Feather name="settings" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          }
+        />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Coral Hero Card with Bar Chart */}
         <View style={styles.coralHeroCard}>
           {/* Card Header Row */}
@@ -191,6 +192,7 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
+      </View>
     </View>
   );
 };
@@ -199,6 +201,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   topHeaderBtn: {
     width: 38,
@@ -221,7 +229,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xl,
+    paddingBottom: 110,
   },
   coralHeroCard: {
     backgroundColor: COLORS.coral,

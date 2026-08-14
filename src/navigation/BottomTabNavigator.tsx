@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { COLORS, RADIUS } from '../constants/theme';
 
@@ -12,8 +13,11 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 const Tab = createBottomTabNavigator();
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 16);
+
   return (
-    <View style={styles.tabBarContainer}>
+    <View style={[styles.tabBarContainer, { bottom: bottomPadding }]}>
       <View style={styles.tabBarPill}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;

@@ -7,18 +7,23 @@ import {
   ScrollView,
 } from 'react-native';
 import { MaterialCommunityIcons, Ionicons, Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { useApp } from '../context/AppContext';
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, stats } = useApp();
+  const insets = useSafeAreaInsets();
   const profileUrl = `https://tapshare.app/p/${user.id || 'a7f3k9'}`;
+  const topPadding = Math.max(insets.top, SPACING.md);
 
   return (
     <View style={styles.container}>
-      {/* Top Header */}
-      <View style={styles.headerRow}>
+      {/* Responsive Wrapper */}
+      <View style={styles.responsiveWrapper}>
+        {/* Top Header */}
+        <View style={[styles.headerRow, { paddingTop: topPadding }]}>
         <View style={styles.userInfoRow}>
           <TouchableOpacity
             activeOpacity={0.8}
@@ -111,6 +116,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           </View>
         </TouchableOpacity>
       </ScrollView>
+      </View>
     </View>
   );
 };
@@ -120,12 +126,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
+  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
     paddingBottom: SPACING.md,
   },
   userInfoRow: {
@@ -181,7 +192,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xl,
+    paddingBottom: 110,
   },
   heroRow: {
     flexDirection: 'row',

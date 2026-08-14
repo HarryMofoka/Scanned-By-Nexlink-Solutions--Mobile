@@ -28,7 +28,8 @@ export const QRScannerScreen: React.FC<{ navigation: any }> = ({ navigation }) =
 
   return (
     <View style={styles.container}>
-      <HeaderNav title="Scan QR Code" onBack={() => navigation.goBack()} />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav title="Scan QR Code" onBack={() => navigation.goBack()} />
 
       {!permission?.granted ? (
         <View style={styles.permissionContainer}>
@@ -79,6 +80,7 @@ export const QRScannerScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           </View>
         </View>
       )}
+      </View>
     </View>
   );
 };
@@ -87,6 +89,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   permissionContainer: {
     flex: 1,

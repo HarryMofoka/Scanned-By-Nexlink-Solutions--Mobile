@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../constants/theme';
 
 interface HeaderNavProps {
@@ -18,8 +19,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   rightAction,
   rightTextAction,
 }) => {
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, SPACING.xs);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: topPadding, height: 56 + topPadding }]}>
       <View style={styles.leftContainer}>
         {showBack && onBack ? (
           <TouchableOpacity activeOpacity={0.7} style={styles.circleBtn} onPress={onBack}>
@@ -51,12 +55,14 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
     backgroundColor: COLORS.background,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   leftContainer: {
     width: 44,

@@ -50,9 +50,10 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
 
   return (
     <View style={styles.container}>
-      <HeaderNav title="Settings" onBack={() => navigation.goBack()} />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav title="Settings" onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* User Card */}
         <TouchableOpacity
           activeOpacity={0.9}
@@ -136,6 +137,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
         {/* Footer */}
         <Text style={styles.footerVersion}>TapShare v1.0.0</Text>
       </ScrollView>
+      </View>
     </View>
   );
 };
@@ -145,10 +147,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
+  },
   scrollContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xl,
+    paddingBottom: 110,
   },
   userWhiteCard: {
     backgroundColor: '#FFFFFF',

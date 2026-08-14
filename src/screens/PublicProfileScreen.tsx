@@ -63,15 +63,16 @@ export const PublicProfileScreen: React.FC<{ navigation: any; route: any }> = ({
 
   return (
     <View style={styles.container}>
-      <HeaderNav
-        title="Digital Card"
-        onBack={() => navigation.goBack()}
-        rightAction={
-          <TouchableOpacity style={styles.shareHeaderBtn} onPress={handleShareCard}>
-            <Feather name="share-2" size={18} color="#FFFFFF" />
-          </TouchableOpacity>
-        }
-      />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav
+          title="Digital Card"
+          onBack={() => navigation.goBack()}
+          rightAction={
+            <TouchableOpacity style={styles.shareHeaderBtn} onPress={handleShareCard}>
+              <Feather name="share-2" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          }
+        />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Top Header Card */}
@@ -143,6 +144,7 @@ export const PublicProfileScreen: React.FC<{ navigation: any; route: any }> = ({
           <Text style={styles.brandFooterText}>Powered by TapShare</Text>
         </View>
       </ScrollView>
+      </View>
     </View>
   );
 };
@@ -151,6 +153,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   shareHeaderBtn: {
     width: 38,

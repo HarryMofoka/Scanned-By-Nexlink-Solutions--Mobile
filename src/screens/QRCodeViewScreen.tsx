@@ -48,14 +48,15 @@ export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) 
 
   return (
     <View style={styles.container}>
-      <HeaderNav
-        onBack={() => navigation.goBack()}
-        rightAction={
-          <TouchableOpacity style={styles.topRightShareBtn} onPress={handleShare}>
-            <Feather name="share" size={20} color={COLORS.textWhite} />
-          </TouchableOpacity>
-        }
-      />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav
+          onBack={() => navigation.goBack()}
+          rightAction={
+            <TouchableOpacity style={styles.topRightShareBtn} onPress={handleShare}>
+              <Feather name="share" size={20} color={COLORS.textWhite} />
+            </TouchableOpacity>
+          }
+        />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Main White Card */}
@@ -110,6 +111,7 @@ export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) 
           <Text style={styles.nfcShortcutText}>Or tap to share via NFC</Text>
         </TouchableOpacity>
       </ScrollView>
+      </View>
     </View>
   );
 };
@@ -118,6 +120,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   topRightShareBtn: {
     width: 44,

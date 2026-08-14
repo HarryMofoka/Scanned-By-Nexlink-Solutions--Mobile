@@ -54,12 +54,13 @@ export const LoginScreen: React.FC<{ navigation: any; route: any }> = ({ navigat
 
   return (
     <View style={styles.container}>
-      <HeaderNav onBack={() => navigation.goBack()} />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav onBack={() => navigation.goBack()} />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -169,6 +170,7 @@ export const LoginScreen: React.FC<{ navigation: any; route: any }> = ({ navigat
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      </View>
     </View>
   );
 };
@@ -177,6 +179,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   scrollContent: {
     paddingHorizontal: SPACING.lg,

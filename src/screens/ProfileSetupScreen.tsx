@@ -37,12 +37,13 @@ export const ProfileSetupScreen: React.FC<{ navigation: any }> = ({ navigation }
 
   return (
     <View style={styles.container}>
-      <HeaderNav onBack={() => navigation.goBack()} />
+      <View style={styles.responsiveWrapper}>
+        <HeaderNav onBack={() => navigation.goBack()} />
 
-      {/* Progress Bar */}
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: '70%' }]} />
-      </View>
+        {/* Progress Bar */}
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: '70%' }]} />
+        </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Title */}
@@ -121,6 +122,7 @@ export const ProfileSetupScreen: React.FC<{ navigation: any }> = ({ navigation }
         />
       </View>
 
+      </View>
       {/* Modal */}
       <AddLinkModal
         visible={showAddModal}
@@ -135,6 +137,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   progressTrack: {
     height: 4,
