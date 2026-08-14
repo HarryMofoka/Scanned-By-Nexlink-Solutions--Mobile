@@ -1,57 +1,47 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProfile, UserStats, SocialLink } from '../types';
+import { PROFILE_CONFIG } from '../config/profile';
 
 const INITIAL_PROFILE: UserProfile = {
-  id: 'a7f3k9',
-  name: 'Thabo Nkosi',
-  email: 'thabo@email.com',
-  phone: '+27 82 123 4567',
-  avatarInitials: 'TN',
-  qrCodeUrl: 'tapshare.app/p/a7f3k9',
+  id: 'tapshare-thabo',
+  name: PROFILE_CONFIG.name,
+  email: PROFILE_CONFIG.email,
+  phone: PROFILE_CONFIG.phone,
+  avatarInitials: PROFILE_CONFIG.avatarInitials,
+  qrCodeUrl: PROFILE_CONFIG.cardUrl,
   createdAt: new Date().toISOString(),
-  links: [
-    {
-      id: 'l1',
-      type: 'linkedin',
-      title: 'LinkedIn',
-      url: 'linkedin.com/in/thabo',
-      iconName: 'linkedin',
-      brandColor: '#0077B5',
-    },
-    {
-      id: 'l2',
-      type: 'instagram',
-      title: 'Instagram',
-      url: 'instagram.com/@thabo.nkosi',
-      iconName: 'instagram',
-      brandColor: '#E4405F',
-    },
-  ],
+  links: PROFILE_CONFIG.links.map((link, idx) => ({
+    id: `l_${idx + 1}`,
+    type: link.label.toLowerCase().includes('linkedin')
+      ? 'linkedin'
+      : link.label.toLowerCase().includes('instagram')
+      ? 'instagram'
+      : link.label.toLowerCase().includes('github')
+      ? 'github'
+      : 'website',
+    title: link.label,
+    url: link.url,
+    iconName: link.label.toLowerCase(),
+  })),
 };
 
 const INITIAL_STATS: UserStats = {
-  totalViews: 1240,
-  thisWeekViews: 47,
-  vsLastMonthPercent: 18,
-  scanSuccessRatePercent: 98,
-  highestDayCount: 62,
-  highestDayName: 'Wednesday',
-  dailyData: [
-    { day: 'M', fullDay: 'Monday', views: 18 },
-    { day: 'T', fullDay: 'Tuesday', views: 34 },
-    { day: 'W', fullDay: 'Wednesday', views: 62, isPeak: true },
-    { day: 'T', fullDay: 'Thursday', views: 47 },
-    { day: 'F', fullDay: 'Friday', views: 29 },
-    { day: 'S', fullDay: 'Saturday', views: 41 },
-    { day: 'S', fullDay: 'Sunday', views: 15 },
-  ],
+  totalViews: 0,
+  thisWeekViews: 0,
+  vsLastMonthPercent: 0,
+  scanSuccessRatePercent: 100,
+  highestDayCount: 0,
+  highestDayName: 'Total',
+  dailyData: [],
 };
 
 interface AppContextType {
   isLoggedIn: boolean;
   user: UserProfile;
   stats: UserStats;
+  liveScanCount: number;
+  isLoadingScans: boolean;
   nfcWriteState: 'idle' | 'writing' | 'success' | 'error';
   login: (email?: string) => Promise<void>;
   signup: (email?: string, name?: string) => Promise<void>;
@@ -60,6 +50,7 @@ interface AppContextType {
   addLink: (link: Omit<SocialLink, 'id'>) => Promise<void>;
   removeLink: (linkId: string) => Promise<void>;
   deleteCard: () => Promise<void>;
+  fetchLiveScanCount: () => Promise<void>;
   incrementProfileViews: (profileId: string) => void;
   setNfcState: (state: 'idle' | 'writing' | 'success' | 'error') => void;
   hasCompletedSetup: boolean;
@@ -69,27 +60,55 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+  const [isLoggedIn] = useState<boolean>(true);
   const [hasCompletedSetup, setHasCompletedSetup] = useState<boolean>(true);
   const [user, setUser] = useState<UserProfile>(INITIAL_PROFILE);
   const [stats, setStats] = useState<UserStats>(INITIAL_STATS);
+  const [liveScanCount, setLiveScanCount] = useState<number>(0);
+  const [isLoadingScans, setIsLoadingScans] = useState<boolean>(true);
   const [nfcWriteState, setNfcWriteState] = useState<'idle' | 'writing' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     loadStoredData();
+    fetchLiveScanCount();
   }, []);
 
   const loadStoredData = async () => {
     try {
       const storedUser = await AsyncStorage.getItem('@tapshare_user');
-      const storedAuth = await AsyncStorage.getItem('@tapshare_auth');
-      const storedStats = await AsyncStorage.getItem('@tapshare_stats');
-      
-      if (storedUser) setUser(JSON.parse(storedUser));
-      if (storedAuth !== null) setIsLoggedIn(JSON.parse(storedAuth));
-      if (storedStats) setStats(JSON.parse(storedStats));
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     } catch (e) {
-      console.warn('Failed to load storage', e);
+      console.warn('Failed to load stored user', e);
+    }
+  };
+
+  const fetchLiveScanCount = async () => {
+    setIsLoadingScans(true);
+    try {
+      // Task 3: Use CountAPI's read-only 'get' endpoint (does not increment) to pull current total
+      const countApiKey = PROFILE_CONFIG.countApiKey || 'tapshare-thabo';
+      const response = await fetch(`https://api.countapi.xyz/get/${countApiKey}/scans`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const count = typeof data?.value === 'number' ? data.value : 0;
+        setLiveScanCount(count);
+        setStats(prev => ({
+          ...prev,
+          totalViews: count,
+          thisWeekViews: count,
+        }));
+      } else {
+        // Fallback for key not created yet or 0 state
+        setLiveScanCount(0);
+      }
+    } catch (e) {
+      console.warn('CountAPI fetch failed, falling back gracefully to 0', e);
+      setLiveScanCount(0);
+    } finally {
+      setIsLoadingScans(false);
     }
   };
 
@@ -102,35 +121,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const login = async (email?: string) => {
-    setIsLoggedIn(true);
-    await AsyncStorage.setItem('@tapshare_auth', JSON.stringify(true));
-    if (email && email !== user.email) {
-      const initials = email.substring(0, 2).toUpperCase();
-      const updated = { ...user, email, avatarInitials: initials };
-      await saveUser(updated);
-    }
+  const login = async () => {
+    // Single-user MVP: always logged in as owner profile
   };
 
-  const signup = async (email?: string, name?: string) => {
-    setIsLoggedIn(true);
-    setHasCompletedSetup(false);
-    await AsyncStorage.setItem('@tapshare_auth', JSON.stringify(true));
-    const newInitials = name
-      ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-      : 'TN';
-    const updated = {
-      ...user,
-      name: name || 'New User',
-      email: email || 'user@tapshare.app',
-      avatarInitials: newInitials,
-    };
-    await saveUser(updated);
+  const signup = async () => {
+    // Single-user MVP: always logged in as owner profile
   };
 
   const logout = async () => {
-    setIsLoggedIn(false);
-    await AsyncStorage.setItem('@tapshare_auth', JSON.stringify(false));
+    // Reset to default single-user profile
+    setUser(INITIAL_PROFILE);
+    await AsyncStorage.removeItem('@tapshare_user');
   };
 
   const updateProfile = async (updated: Partial<UserProfile>) => {
@@ -168,32 +170,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteCard = async () => {
-    const resetUser: UserProfile = {
-      ...user,
-      name: '',
-      phone: '',
-      links: [],
-    };
-    await saveUser(resetUser);
-    setHasCompletedSetup(false);
+    await saveUser(INITIAL_PROFILE);
   };
 
-  const incrementProfileViews = (profileId: string) => {
-    setStats(prev => {
-      const newTotal = prev.totalViews + 1;
-      const newThisWeek = prev.thisWeekViews + 1;
-      const updatedDaily = prev.dailyData.map(d => 
-        d.day === 'W' ? { ...d, views: d.views + 1 } : d
-      );
-      const updated = {
-        ...prev,
-        totalViews: newTotal,
-        thisWeekViews: newThisWeek,
-        dailyData: updatedDaily,
-      };
-      AsyncStorage.setItem('@tapshare_stats', JSON.stringify(updated)).catch(() => {});
-      return updated;
-    });
+  const incrementProfileViews = () => {
+    setLiveScanCount(prev => prev + 1);
+    setStats(prev => ({
+      ...prev,
+      totalViews: prev.totalViews + 1,
+      thisWeekViews: prev.thisWeekViews + 1,
+    }));
   };
 
   const setNfcState = (state: 'idle' | 'writing' | 'success' | 'error') => {
@@ -206,6 +192,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isLoggedIn,
         user,
         stats,
+        liveScanCount,
+        isLoadingScans,
         nfcWriteState,
         login,
         signup,
@@ -214,6 +202,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addLink,
         removeLink,
         deleteCard,
+        fetchLiveScanCount,
         incrementProfileViews,
         setNfcState,
         hasCompletedSetup,

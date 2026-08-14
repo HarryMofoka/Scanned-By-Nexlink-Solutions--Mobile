@@ -16,11 +16,12 @@ import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { HeaderNav } from '../components/HeaderNav';
 import { CustomButton } from '../components/CustomButton';
 import { useApp } from '../context/AppContext';
+import { PROFILE_CONFIG } from '../config/profile';
 
 export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useApp();
-  const profileUrl = `https://tapshare.app/p/${user.id || 'a7f3k9'}`;
-  const displayUrl = `tapshare.app/p/${user.id || 'a7f3k9'}`;
+  const profileUrl = PROFILE_CONFIG.cardUrl;
+  const displayUrl = PROFILE_CONFIG.cardUrl.replace('https://', '');
 
   const qrRef = useRef<any>(null);
 

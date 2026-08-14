@@ -12,10 +12,11 @@ import { HeaderNav } from '../components/HeaderNav';
 import { CustomButton } from '../components/CustomButton';
 import { NFCWaveAnimation } from '../components/NFCWaveAnimation';
 import { useApp } from '../context/AppContext';
+import { PROFILE_CONFIG } from '../config/profile';
 
 export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useApp();
-  const displayUrl = `tapshare.app/p/${user.id || 'a7f3k9'}`;
+  const displayUrl = PROFILE_CONFIG.cardUrl;
 
   const [currentState, setCurrentState] = useState<'writing' | 'success' | 'error'>('writing');
 

@@ -11,11 +11,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { useApp } from '../context/AppContext';
+import { PROFILE_CONFIG } from '../config/profile';
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { user, stats } = useApp();
+  const { user, liveScanCount, isLoadingScans } = useApp();
   const insets = useSafeAreaInsets();
-  const profileUrl = `https://tapshare.app/p/${user.id || 'a7f3k9'}`;
+  const profileUrl = PROFILE_CONFIG.cardUrl;
   const headerTopPadding = Math.max(insets.top, 16) + 16;
 
   return (
@@ -101,9 +102,11 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           onPress={() => navigation.navigate('Stats')}
         >
           <View style={styles.dataLeftCol}>
-            <Text style={styles.dataViewsCount}>{stats.thisWeekViews || 47}</Text>
-            <Text style={styles.dataViewsLabel}>views</Text>
-            <Text style={styles.dataWeeklyTrend}>+12 this week</Text>
+            <Text style={styles.dataViewsCount}>
+              {isLoadingScans ? '...' : liveScanCount}
+            </Text>
+            <Text style={styles.dataViewsLabel}>total scans</Text>
+            <Text style={styles.dataWeeklyTrend}>Live CountAPI scans</Text>
           </View>
 
           <View style={styles.dataRightCol}>

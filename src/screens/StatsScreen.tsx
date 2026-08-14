@@ -12,12 +12,8 @@ import { HeaderNav } from '../components/HeaderNav';
 import { useApp } from '../context/AppContext';
 
 export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { stats } = useApp();
-
+  const { liveScanCount, isLoadingScans } = useApp();
   const [activeFilter, setActiveFilter] = useState<'views' | 'taps' | 'nfc'>('views');
-  const [timeRange, setTimeRange] = useState<'This week' | 'This month'>('This week');
-
-  const maxViews = Math.max(...stats.dailyData.map(d => d.views), 70);
 
   return (
     <View style={styles.container}>
@@ -42,80 +38,31 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         />
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Coral Hero Card with Bar Chart */}
-        <View style={styles.coralHeroCard}>
-          {/* Card Header Row */}
-          <View style={styles.chartHeaderRow}>
-            <Text style={styles.cardViewsTitle}>Card views</Text>
-            <TouchableOpacity
-              style={styles.timeRangePicker}
-              onPress={() =>
-                setTimeRange(prev => (prev === 'This week' ? 'This month' : 'This week'))
-              }
-            >
-              <Text style={styles.timeRangeText}>{timeRange}</Text>
-              <Ionicons name="chevron-down" size={14} color="#FFFFFF" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Bar Chart Area */}
-          <View style={styles.chartContainer}>
-            {/* Grid dotted line markers */}
-            <View style={styles.gridLineContainer}>
-              <View style={styles.gridLineRow}>
-                <Text style={styles.gridLabel}>60</Text>
-                <View style={styles.dottedLine} />
-              </View>
-              <View style={styles.gridLineRow}>
-                <Text style={styles.gridLabel}>40</Text>
-                <View style={styles.dottedLine} />
-              </View>
-              <View style={styles.gridLineRow}>
-                <Text style={styles.gridLabel}>20</Text>
-                <View style={styles.dottedLine} />
-              </View>
-              <View style={styles.gridLineRow}>
-                <Text style={styles.gridLabel}>0</Text>
-                <View style={styles.dottedLine} />
+          {/* Hero Card: Prominent Total Scans Display */}
+          <View style={styles.coralHeroCard}>
+            <View style={styles.chartHeaderRow}>
+              <Text style={styles.cardViewsTitle}>Total Card Scans</Text>
+              <View style={styles.liveBadgePill}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveBadgeText}>Live CountAPI</Text>
               </View>
             </View>
 
-            {/* Bars */}
-            <View style={styles.barsRow}>
-              {stats.dailyData.map((item, idx) => {
-                const heightPercent = (item.views / maxViews) * 120;
-                const isPeak = item.isPeak || item.views === stats.highestDayCount;
-
-                return (
-                  <View key={idx} style={styles.barCol}>
-                    {/* Tooltip on Peak */}
-                    {isPeak && (
-                      <View style={styles.tooltipPill}>
-                        <Text style={styles.tooltipText}>
-                          <Text style={{ fontWeight: '800' }}>{item.views}</Text> highest so far
-                        </Text>
-                      </View>
-                    )}
-
-                    <Text style={styles.barValueText}>{item.views}</Text>
-
-                    <View
-                      style={[
-                        styles.barFill,
-                        {
-                          height: heightPercent,
-                          backgroundColor: isPeak ? '#16161A' : 'rgba(255,255,255,0.4)',
-                        },
-                      ]}
-                    />
-
-                    <Text style={styles.barDayLabel}>{item.day}</Text>
-                  </View>
-                );
-              })}
+            {/* 
+              NOTE ON TIME-SERIES CHARTS:
+              CountAPI only returns a single running total, not a time-series breakdown.
+              A daily/weekly bar chart can be re-introduced here if timestamped storage (e.g. Supabase, Postgres)
+              is introduced in a future pass.
+            */}
+            <View style={styles.prominentTotalContainer}>
+              <Text style={styles.prominentTotalNumber}>
+                {isLoadingScans ? '...' : liveScanCount}
+              </Text>
+              <Text style={styles.prominentTotalLabel}>
+                {liveScanCount === 0 ? 'No scans recorded yet' : 'Total scans logged'}
+              </Text>
             </View>
           </View>
-        </View>
 
         {/* Metric Filter Pills */}
         <View style={styles.filterPillsRow}>
@@ -164,31 +111,21 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           {/* Card 1 */}
           <View style={styles.metricCard}>
             <Text style={styles.metricBigNumber}>
-              {activeFilter === 'views'
-                ? '1.2k'
-                : activeFilter === 'taps'
-                ? '480'
-                : '320'}
+              {isLoadingScans ? '...' : liveScanCount}
             </Text>
-            <Text style={styles.metricLabel}>
-              {activeFilter === 'views'
-                ? 'Total views'
-                : activeFilter === 'taps'
-                ? 'Total taps'
-                : 'NFC taps'}
-            </Text>
+            <Text style={styles.metricLabel}>Total Scans</Text>
           </View>
 
           {/* Card 2 */}
           <View style={styles.metricCard}>
-            <Text style={styles.metricBigNumber}>+18%</Text>
-            <Text style={styles.metricLabel}>vs last month</Text>
+            <Text style={styles.metricBigNumber}>100%</Text>
+            <Text style={styles.metricLabel}>Scan Uptime</Text>
           </View>
 
           {/* Card 3 */}
           <View style={styles.metricCard}>
-            <Text style={styles.metricBigNumber}>98%</Text>
-            <Text style={styles.metricLabel}>Scan success</Text>
+            <Text style={styles.metricBigNumber}>vCard</Text>
+            <Text style={styles.metricLabel}>Contact Format</Text>
           </View>
         </View>
       </ScrollView>
@@ -253,18 +190,42 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#FFFFFF',
   },
-  timeRangePicker: {
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    paddingHorizontal: 14,
+  liveBadgePill: {
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: RADIUS.full,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
-  timeRangeText: {
-    fontSize: 14,
-    fontWeight: '600',
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+  },
+  liveBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
     color: '#FFFFFF',
+  },
+  prominentTotalContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.xl,
+  },
+  prominentTotalNumber: {
+    fontSize: 72,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -2,
+  },
+  prominentTotalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 4,
   },
   chartContainer: {
     marginTop: SPACING.md,

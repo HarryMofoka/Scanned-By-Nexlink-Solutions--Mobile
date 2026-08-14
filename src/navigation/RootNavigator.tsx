@@ -22,7 +22,7 @@ export const RootNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Splash"
+        initialRouteName="MainTabs"
         screenOptions={{
           headerShown: false,
           cardStyle: { backgroundColor: '#0D0D0E' },

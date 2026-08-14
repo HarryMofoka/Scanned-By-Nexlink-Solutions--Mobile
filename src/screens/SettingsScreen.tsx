@@ -124,13 +124,10 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          <CustomButton title="Log out" onPress={handleLogout} variant="primary" />
-
           <CustomButton
-            title="Delete account"
-            onPress={handleDeleteAccount}
+            title="Reset Profile to Defaults"
+            onPress={handleLogout}
             variant="secondary"
-            style={{ marginTop: SPACING.xs }}
           />
         </View>
 

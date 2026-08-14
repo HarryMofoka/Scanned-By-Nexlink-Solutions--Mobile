@@ -6,10 +6,11 @@ import QRCode from 'react-native-qrcode-svg';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { CustomButton } from '../components/CustomButton';
 import { useApp } from '../context/AppContext';
+import { PROFILE_CONFIG } from '../config/profile';
 
 export const QRCodeReadyScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useApp();
-  const profileUrl = `https://tapshare.app/p/${user.id || 'a7f3k9'}`;
+  const profileUrl = PROFILE_CONFIG.cardUrl;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
