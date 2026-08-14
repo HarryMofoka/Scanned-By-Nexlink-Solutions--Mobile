@@ -20,7 +20,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   rightTextAction,
 }) => {
   const insets = useSafeAreaInsets();
-  const topPadding = Math.max(insets.top, SPACING.xs);
+  const topPadding = Math.max(insets.top, 16);
 
   return (
     <View style={[styles.container, { paddingTop: topPadding, height: 56 + topPadding }]}>

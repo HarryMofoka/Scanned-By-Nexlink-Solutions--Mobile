@@ -16,14 +16,14 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
   const { user, stats } = useApp();
   const insets = useSafeAreaInsets();
   const profileUrl = `https://tapshare.app/p/${user.id || 'a7f3k9'}`;
-  const topPadding = Math.max(insets.top, SPACING.md);
+  const headerTopPadding = Math.max(insets.top, 16) + 16;
 
   return (
     <View style={styles.container}>
       {/* Responsive Wrapper */}
       <View style={styles.responsiveWrapper}>
         {/* Top Header */}
-        <View style={[styles.headerRow, { paddingTop: topPadding }]}>
+        <View style={[styles.headerRow, { paddingTop: headerTopPadding }]}>
         <View style={styles.userInfoRow}>
           <TouchableOpacity
             activeOpacity={0.8}
