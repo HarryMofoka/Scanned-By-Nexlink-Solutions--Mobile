@@ -1,4 +1,18 @@
-// src/config/profile.ts - TypeScript export for app profile config
+/**
+ * src/config/profile.ts — Client-side profile defaults and types for TapShare.
+ *
+ * Provides:
+ *   - ProfileConfig interface and PROFILE_CONFIG constant used by AppContext
+ *     as the default profile when no AsyncStorage data exists yet.
+ *   - countApiKey and cardUrl for the optional tracked-sharing backend.
+ *
+ * These defaults are overridden once the user edits their profile via
+ * EditProfileScreen (which persists changes to AsyncStorage).
+ *
+ * Environment variable overrides (for CI/CD):
+ *   - EXPO_PUBLIC_COUNT_API_KEY: Override CountAPI namespace
+ *   - EXPO_PUBLIC_CARD_URL: Override the deployed vCard endpoint URL
+ */
 export interface ProfileLink {
   label: string;
   url: string;

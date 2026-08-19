@@ -1,3 +1,11 @@
+/**
+ * types/index.ts — TypeScript data models for TapShare.
+ *
+ * All interfaces used across the app are defined here.
+ * These types are consumed by AppContext, screens, and the vCard generator.
+ */
+
+/** A single social/website link attached to the user's profile. */
 export interface SocialLink {
   id: string;
   type: 'linkedin' | 'instagram' | 'x' | 'whatsapp' | 'email' | 'website' | 'github' | 'youtube' | 'facebook' | 'custom';
@@ -7,6 +15,7 @@ export interface SocialLink {
   brandColor?: string;
 }
 
+/** The app owner's complete profile, persisted in AsyncStorage. */
 export interface UserProfile {
   id: string;
   name: string;
@@ -18,6 +27,7 @@ export interface UserProfile {
   createdAt: string;
 }
 
+/** A single day's scan data (currently unused — CountAPI only provides a running total). */
 export interface DailyStat {
   day: string; // 'M', 'T', 'W', etc.
   fullDay: string; // 'Monday', etc.
@@ -25,6 +35,7 @@ export interface DailyStat {
   isPeak?: boolean;
 }
 
+/** Aggregated scan statistics displayed on the Dashboard and Stats screens. */
 export interface UserStats {
   totalViews: number;
   thisWeekViews: number;
@@ -35,6 +46,7 @@ export interface UserStats {
   dailyData: DailyStat[];
 }
 
+/** React Navigation route parameter definitions for the root stack navigator. */
 export type RootStackParamList = {
   Splash: undefined;
   GetStarted: undefined;

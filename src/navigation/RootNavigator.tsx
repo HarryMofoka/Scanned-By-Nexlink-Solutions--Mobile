@@ -1,3 +1,14 @@
+/**
+ * RootNavigator.tsx — Root stack navigator for TapShare.
+ *
+ * Contains all screens in a single stack. The initial route is 'MainTabs'
+ * (the bottom tab navigator with Dashboard, QR Scanner, and Settings),
+ * since this is a single-user app that doesn't require login.
+ *
+ * Onboarding screens (Splash, GetStarted, Login, ProfileSetup) are still
+ * registered but not the initial route — they can be navigated to if
+ * multi-user onboarding is added in the future.
+ */
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';

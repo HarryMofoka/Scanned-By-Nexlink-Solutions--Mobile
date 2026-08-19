@@ -1,3 +1,17 @@
+/**
+ * theme.ts — Design system tokens for TapShare.
+ *
+ * Centralised design constants consumed by all screens and components.
+ * Uses a dark-mode-first palette with coral and periwinkle accent colours.
+ *
+ * Exports:
+ *   - COLORS: Brand palette, text colours, UI states (error, success, warning)
+ *   - SPACING: Consistent spacing scale (xs=4 through xxl=48)
+ *   - RADIUS: Border radius tokens (sm=8 through full=9999)
+ *   - SHADOWS: Elevation and glow presets for cards and accent elements
+ */
+
+/** Brand colour palette and semantic UI colours. */
 export const COLORS = {
   background: '#0D0D0E',
   cardDark: '#16161A',

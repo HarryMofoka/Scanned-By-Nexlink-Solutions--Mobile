@@ -1,3 +1,22 @@
+/**
+ * AppContext.tsx — Global application state for TapShare.
+ *
+ * This is the single-user MVP state layer. It manages:
+ *   - User profile (name, phone, email, links, avatar initials)
+ *   - Live scan count fetched from CountAPI's read-only GET endpoint
+ *   - NFC write state machine (idle → writing → success/error)
+ *   - CRUD operations for profile fields and social links
+ *
+ * Data flow:
+ *   1. On mount, loads any previously-saved profile from AsyncStorage.
+ *   2. Fetches live scan count from CountAPI (read-only, does not increment).
+ *   3. Profile edits are persisted to AsyncStorage immediately.
+ *   4. QR codes and NFC tags read from `user` state via useApp() hook,
+ *      so edits are reflected instantly in generated payloads.
+ *
+ * No database, ORM, or authentication is involved — this is intentional
+ * for the single-user MVP. Multi-user support is deferred.
+ */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProfile, UserStats, SocialLink } from '../types';

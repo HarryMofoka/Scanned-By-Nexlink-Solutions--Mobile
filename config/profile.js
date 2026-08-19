@@ -1,4 +1,19 @@
-// config/profile.js - Single-User MVP Profile Configuration
+/**
+ * config/profile.js — Server-side profile configuration for TapShare.
+ *
+ * This file is read by api/card.js (the Vercel serverless function) to
+ * generate vCard responses. It is NOT used by the mobile app's QR/NFC
+ * generation — those read from AsyncStorage via AppContext instead.
+ *
+ * To customise the server-side contact card:
+ *   1. Edit the fields below with your real contact info.
+ *   2. Redeploy to Vercel (or set environment variables).
+ *
+ * Environment variable overrides (optional):
+ *   - COUNT_API_KEY: Override the CountAPI namespace (default: 'tapshare-thabo')
+ *   - CARD_URL: Override the full vCard endpoint URL
+ *   - VERCEL_URL: Auto-set by Vercel; used as fallback to construct cardUrl
+ */
 module.exports = {
   firstName: 'Thabo',
   lastName: 'Nkosi',
