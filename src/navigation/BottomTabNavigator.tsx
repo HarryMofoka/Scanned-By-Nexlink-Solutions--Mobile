@@ -14,12 +14,19 @@ const Tab = createBottomTabNavigator();
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, 16);
+  const bottomPadding = Math.max(insets.bottom, 20);
+
+  // Hide the floating navigation pill entirely on the Settings screen
+  const currentRoute = state.routes[state.index];
+  if (currentRoute?.name === 'SettingsTab') {
+    return null;
+  }
 
   return (
     <View style={[styles.tabBarContainer, { bottom: bottomPadding }]}>
       <View style={styles.tabBarPill}>
         {state.routes.map((route: any, index: number) => {
+          // Do not render a button for Settings in the bottom pill if we want 3 main tabs or keep it accessible
           const isFocused = state.index === index;
 
           const onPress = () => {
@@ -39,7 +46,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             icon = (
               <Ionicons
                 name="home"
-                size={22}
+                size={26}
                 color={isFocused ? COLORS.coral : COLORS.textMuted}
               />
             );
@@ -47,7 +54,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             icon = (
               <MaterialCommunityIcons
                 name="qrcode"
-                size={24}
+                size={28}
                 color={isFocused ? COLORS.coral : COLORS.textMuted}
               />
             );
@@ -55,7 +62,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             icon = (
               <Ionicons
                 name="bar-chart-sharp"
-                size={22}
+                size={26}
                 color={isFocused ? COLORS.coral : COLORS.textMuted}
               />
             );
@@ -63,7 +70,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             icon = (
               <Feather
                 name="settings"
-                size={22}
+                size={26}
                 color={isFocused ? COLORS.coral : COLORS.textMuted}
               />
             );
@@ -76,7 +83,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               onPress={onPress}
               style={styles.tabItem}
             >
-              {icon}
+              <View style={[styles.tabIconWrapper, isFocused && styles.tabIconWrapperFocused]}>
+                {icon}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -105,32 +114,43 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     position: 'absolute',
     bottom: 24,
-    left: 20,
-    right: 20,
+    left: 16,
+    right: 16,
     alignItems: 'center',
+    zIndex: 1000,
   },
   tabBarPill: {
     flexDirection: 'row',
-    height: 64,
-    backgroundColor: '#16161A',
+    height: 74,
+    backgroundColor: '#18181D',
     borderRadius: RADIUS.full,
     paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'space-around',
     width: '100%',
-    maxWidth: 360,
-    borderWidth: 1,
-    borderColor: '#23232A',
+    maxWidth: 390,
+    borderWidth: 1.5,
+    borderColor: '#2A2A36',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.45,
+    shadowRadius: 20,
+    elevation: 12,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
+  },
+  tabIconWrapper: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabIconWrapperFocused: {
+    backgroundColor: 'rgba(255, 107, 107, 0.15)',
   },
 });
