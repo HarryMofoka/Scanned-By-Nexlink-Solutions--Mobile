@@ -51,6 +51,8 @@ export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) 
     <View style={styles.container}>
       <View style={styles.responsiveWrapper}>
         <HeaderNav
+          title="QR Code"
+          showBack={navigation?.canGoBack ? navigation.canGoBack() : false}
           onBack={() => navigation.goBack()}
           rightAction={
             <TouchableOpacity style={styles.topRightShareBtn} onPress={handleShare}>
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xl,
+    paddingBottom: 110,
     alignItems: 'center',
   },
   mainWhiteCard: {

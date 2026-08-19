@@ -73,7 +73,6 @@ interface AppContextType {
   removeLink: (linkId: string) => Promise<void>;
   deleteCard: () => Promise<void>;
   fetchLiveScanCount: () => Promise<void>;
-  incrementProfileViews: (profileId: string) => void;
   setNfcState: (state: 'idle' | 'writing' | 'success' | 'error') => void;
   hasCompletedSetup: boolean;
   setHasCompletedSetup: (val: boolean) => void;
@@ -249,15 +248,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await saveUser(INITIAL_PROFILE);
   };
 
-  const incrementProfileViews = () => {
-    setLiveScanCount(prev => prev + 1);
-    setStats(prev => ({
-      ...prev,
-      totalViews: prev.totalViews + 1,
-      thisWeekViews: prev.thisWeekViews + 1,
-    }));
-  };
-
   const setNfcState = (state: 'idle' | 'writing' | 'success' | 'error') => {
     setNfcWriteState(state);
   };
@@ -281,7 +271,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         removeLink,
         deleteCard,
         fetchLiveScanCount,
-        incrementProfileViews,
         setNfcState,
         hasCompletedSetup,
         setHasCompletedSetup,

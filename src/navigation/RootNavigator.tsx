@@ -2,7 +2,7 @@
  * RootNavigator.tsx — Root stack navigator for TapShare.
  *
  * Contains all screens in a single stack. The initial route is 'MainTabs'
- * (the bottom tab navigator with Dashboard, QR Scanner, and Settings),
+ * (the bottom tab navigator with Dashboard, QR Code, Stats, and Settings),
  * since this is a single-user app that doesn't require login.
  *
  * Onboarding screens (Splash, GetStarted, Login, ProfileSetup) are still
@@ -24,8 +24,6 @@ import { NFCTagSharingScreen } from '../screens/NFCTagSharingScreen';
 import { EditProfileScreen } from '../screens/EditProfileScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { StatsScreen } from '../screens/StatsScreen';
-import { QRScannerScreen } from '../screens/QRScannerScreen';
-import { PublicProfileScreen } from '../screens/PublicProfileScreen';
 
 const Stack = createStackNavigator();
 
@@ -50,8 +48,6 @@ export const RootNavigator = () => {
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Stats" component={StatsScreen} />
-        <Stack.Screen name="QRScanner" component={QRScannerScreen} />
-        <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

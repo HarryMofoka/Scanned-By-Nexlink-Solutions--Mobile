@@ -59,6 +59,4 @@ export type RootStackParamList = {
   EditProfile: undefined;
   Settings: undefined;
   Stats: undefined;
-  QRScanner: undefined;
-  PublicProfile: { profileId: string };
 };

@@ -93,20 +93,18 @@ A lightweight Vercel serverless function is included for **tracked sharing**:
 │   ├── context/
 │   │   └── AppContext.tsx            # Global state: user profile, scan count, actions
 │   ├── navigation/
-│   │   ├── BottomTabNavigator.tsx    # Floating bottom tab bar (Dashboard, QR, Settings)
+│   │   ├── BottomTabNavigator.tsx    # Floating bottom tab bar (Dashboard, QR Code, Stats, Settings)
 │   │   └── RootNavigator.tsx         # Stack navigator with all screens
 │   ├── screens/
-│   │   ├── DashboardScreen.tsx       # Main hub: QR preview, NFC shortcut, live stats
+│   │   ├── DashboardScreen.tsx       # Main hub: QR preview, NFC shortcut, scan stats
 │   │   ├── EditProfileScreen.tsx     # Edit name, phone, and social links
 │   │   ├── GetStartedScreen.tsx      # Onboarding welcome screen
 │   │   ├── LoginScreen.tsx           # Login/signup screen (single-user MVP)
 │   │   ├── NFCTagSharingScreen.tsx   # NFC tag writing flow with state animations
 │   │   ├── ProfileSetupScreen.tsx    # Initial profile setup after onboarding
-│   │   ├── PublicProfileScreen.tsx   # Public-facing profile card view
 │   │   ├── QRCodeReadyScreen.tsx     # "Your QR code is ready!" celebration screen
-│   │   ├── QRCodeViewScreen.tsx      # Full QR code view with share/save actions
-│   │   ├── QRScannerScreen.tsx       # Camera-based QR code scanner
-│   │   ├── SettingsScreen.tsx        # App settings and profile reset
+│   │   ├── QRCodeViewScreen.tsx      # Primary QR Code tab with share/save actions
+│   │   ├── SettingsScreen.tsx        # App settings, scan tracking endpoint, and profile reset
 │   │   ├── SplashScreen.tsx          # Animated app launch screen
 │   │   └── StatsScreen.tsx           # Live scan count from CountAPI
 │   ├── types/
@@ -186,15 +184,13 @@ The app reads profile data from **AsyncStorage** on the device. Default values c
 
 | Screen              | Purpose                                                                 |
 |---------------------|-------------------------------------------------------------------------|
-| **Dashboard**       | Main hub showing QR code preview, NFC shortcut, and live scan count     |
-| **QR Code View**    | Full-screen QR code with share and save options                         |
+| **Dashboard**       | Main hub showing QR code preview, NFC shortcut, and scan overview       |
+| **QR Code**         | Primary QR Code tab with share, save, and vCard display                 |
 | **QR Code Ready**   | Celebration screen shown after first profile setup                      |
 | **NFC Tag Sharing** | Guided NFC tag writing flow with animated states                        |
-| **QR Scanner**      | Camera-based QR code reader                                             |
-| **Stats**           | Live total scan count from CountAPI with "no scans yet" empty state     |
+| **Stats**           | Live total scan count from CountAPI (when tracking endpoint is set)     |
 | **Edit Profile**    | Edit name, phone, and manage social links                               |
-| **Settings**        | Profile overview, app preferences, and profile reset                    |
-| **Public Profile**  | How your profile looks to someone who scans your QR/NFC                 |
+| **Settings**        | Profile overview, scan tracking endpoint configuration, and reset       |
 
 ---
 

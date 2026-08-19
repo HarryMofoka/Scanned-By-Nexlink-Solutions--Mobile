@@ -13,6 +13,8 @@
  *   - EXPO_PUBLIC_COUNT_API_KEY: Override CountAPI namespace
  *   - EXPO_PUBLIC_CARD_URL: Override the deployed vCard endpoint URL
  */
+declare const process: { env: Record<string, string | undefined> };
+
 export interface ProfileLink {
   label: string;
   url: string;

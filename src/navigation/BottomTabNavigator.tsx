@@ -6,7 +6,7 @@ import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { COLORS, RADIUS } from '../constants/theme';
 
 import { DashboardScreen } from '../screens/DashboardScreen';
-import { QRScannerScreen } from '../screens/QRScannerScreen';
+import { QRCodeViewScreen } from '../screens/QRCodeViewScreen';
 import { StatsScreen } from '../screens/StatsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 
@@ -43,11 +43,11 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 color={isFocused ? COLORS.coral : COLORS.textMuted}
               />
             );
-          } else if (route.name === 'ScannerTab') {
+          } else if (route.name === 'QRCodeTab') {
             icon = (
               <MaterialCommunityIcons
-                name="qrcode-scan"
-                size={22}
+                name="qrcode"
+                size={24}
                 color={isFocused ? COLORS.coral : COLORS.textMuted}
               />
             );
@@ -94,7 +94,7 @@ export const BottomTabNavigator = () => {
       }}
     >
       <Tab.Screen name="DashboardTab" component={DashboardScreen} />
-      <Tab.Screen name="ScannerTab" component={QRScannerScreen} />
+      <Tab.Screen name="QRCodeTab" component={QRCodeViewScreen} />
       <Tab.Screen name="StatsTab" component={StatsScreen} />
       <Tab.Screen name="SettingsTab" component={SettingsScreen} />
     </Tab.Navigator>

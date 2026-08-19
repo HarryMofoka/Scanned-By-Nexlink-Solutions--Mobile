@@ -29,7 +29,7 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.topHeaderBtn}
-                onPress={() => navigation.navigate('Settings')}
+                onPress={() => navigation.navigate('SettingsTab')}
               >
                 <Feather name="settings" size={18} color="#FFFFFF" />
               </TouchableOpacity>
@@ -53,7 +53,7 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               </Text>
               <TouchableOpacity
                 style={styles.noTrackingBtn}
-                onPress={() => navigation.navigate('Settings')}
+                onPress={() => navigation.navigate('SettingsTab')}
               >
                 <Ionicons name="settings-outline" size={18} color="#FFFFFF" />
                 <Text style={styles.noTrackingBtnText}>Open Settings</Text>

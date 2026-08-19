@@ -29,7 +29,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.avatarCircle}
-            onPress={() => navigation.navigate('Settings')}
+            onPress={() => navigation.navigate('SettingsTab')}
           >
             <Text style={styles.avatarText}>{user.avatarInitials || 'TN'}</Text>
           </TouchableOpacity>
@@ -58,7 +58,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.coralCard}
-            onPress={() => navigation.navigate('QRCodeView')}
+            onPress={() => navigation.navigate('QRCodeTab')}
           >
             <View style={styles.cardHeaderRow}>
               <Text style={styles.coralCardTitle}>Your QR code</Text>
@@ -99,7 +99,7 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
         <TouchableOpacity
           activeOpacity={0.9}
           style={styles.dataCard}
-          onPress={() => navigation.navigate('Stats')}
+          onPress={() => navigation.navigate('StatsTab')}
         >
           <View style={styles.dataLeftCol}>
             <Text style={styles.dataViewsCount}>
