@@ -15,7 +15,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D0D0E"
       },
-      "package": "com.tapshare.app"
+      "package": "com.tapshare.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.NFC"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -44,8 +49,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "tapshare-mobile-app"
+        "projectId": "6f92a83f-d3fa-4986-be75-b8aca8b0135e"
       }
-    }
+    },
+    "owner": "harrymofoka"
   }
 }
