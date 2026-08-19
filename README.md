@@ -154,28 +154,25 @@ No server deployment, no API keys, no config files to edit.
 
 ## 🔧 Configuration
 
-### Profile Configuration (Single-User)
+### Profile Config Split: Server vs. Client
 
-The app reads profile data from **AsyncStorage** on the device. Default values come from [`src/config/profile.ts`](src/config/profile.ts), which can be customised:
+TapShare separates server-side and client-side configuration cleanly:
 
-| Field          | Description                                | Default                                       |
-|----------------|--------------------------------------------|-----------------------------------------------|
-| `firstName`    | First name                                 | `Thabo`                                       |
-| `lastName`     | Last name                                  | `Nkosi`                                       |
-| `phone`        | Phone number                               | `+27 82 123 4567`                             |
-| `email`        | Email address                              | `thabo@tapshare.app`                          |
-| `links`        | Array of `{label, url}` social links       | LinkedIn, Instagram, GitHub, Website          |
-| `countApiKey`  | CountAPI namespace for scan tracking       | `tapshare-thabo`                              |
-| `cardUrl`      | Deployed vCard endpoint (optional backend) | `https://tapshare-scanned.vercel.app/api/card`|
+| File | Environment | Purpose |
+|------|-------------|---------|
+| [`config/profile.js`](config/profile.js) | **Serverless (`api/card.js`)** | Read by the Vercel serverless function when serving a downloadable vCard over HTTP and recording scans. Edit this file if you deploy your own backend instance. |
+| [`src/config/profile.ts`](src/config/profile.ts) | **Mobile App (Fallback)** | Provides initial default fallbacks before a user completes first-run setup. **Once real profile data is saved in AsyncStorage, changes here have no effect on the client profile.** |
+| **AsyncStorage (`@tapshare_user`)** | **Mobile App (Active)** | The true source of truth for the app owner's active contact card, edited directly via **Settings → Edit Profile**. |
 
-### Environment Variables (Optional)
+### Environment Variables
 
-| Variable                    | Purpose                                  |
-|-----------------------------|------------------------------------------|
-| `EXPO_PUBLIC_CARD_URL`      | Override the deployed vCard endpoint URL  |
-| `EXPO_PUBLIC_COUNT_API_KEY` | Override the CountAPI namespace           |
-| `CARD_URL`                  | Server-side override for `api/card.js`    |
-| `VERCEL_URL`                | Auto-set by Vercel; used as fallback URL  |
+| Variable | Scope | Purpose | Default |
+|----------|-------|---------|---------|
+| `COUNT_API_KEY` | Server (`api/card.js`) | CountAPI namespace for server scan hits | `tapshare-thabo` |
+| `CARD_URL` | Server (`api/card.js`) | Explicit override for the deployed card URL | *(computed)* |
+| `VERCEL_URL` | Server (`api/card.js`) | Auto-set by Vercel; used to construct fallback `cardUrl` | *(dynamic)* |
+| `EXPO_PUBLIC_DEFAULT_CARD_URL` | Client (Expo App) | Fallback default for the deployed vCard endpoint | `https://tapshare-scanned.vercel.app/api/card` |
+| `EXPO_PUBLIC_DEFAULT_COUNT_API_KEY` | Client (Expo App) | Fallback default CountAPI namespace | `tapshare-thabo` |
 
 ---
 

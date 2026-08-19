@@ -1,18 +1,22 @@
 /**
- * config/profile.js — Server-side profile configuration for TapShare.
+ * config/profile.js — Server-side profile configuration (Optional Tracked Backend).
  *
- * This file is read by api/card.js (the Vercel serverless function) to
- * generate vCard responses. It is NOT used by the mobile app's QR/NFC
- * generation — those read from AsyncStorage via AppContext instead.
+ * ⚠️ IMPORTANT: THIS IS THE SERVER-SIDE CONFIG FILE.
  *
- * To customise the server-side contact card:
- *   1. Edit the fields below with your real contact info.
- *   2. Redeploy to Vercel (or set environment variables).
+ * It is used EXCLUSIVELY by `api/card.js` (the Vercel/Node serverless function)
+ * when serving a downloadable vCard over HTTP and recording scans via CountAPI.
  *
- * Environment variable overrides (optional):
- *   - COUNT_API_KEY: Override the CountAPI namespace (default: 'tapshare-thabo')
- *   - CARD_URL: Override the full vCard endpoint URL
- *   - VERCEL_URL: Auto-set by Vercel; used as fallback to construct cardUrl
+ * This file DOES NOT affect the mobile app's day-to-day profile data!
+ * The mobile app stores and edits the owner's profile on-device in `AsyncStorage`.
+ *
+ * Edit this file ONLY IF:
+ *   - You deploy your own copy of the `api/card.js` backend to Vercel/Node.
+ *   - You want your deployed HTTP endpoint to return your specific details.
+ *
+ * Server-side Environment Variables (Vercel / Node):
+ *   - COUNT_API_KEY : CountAPI namespace for server scan hits (default: 'tapshare-thabo')
+ *   - CARD_URL      : Override URL for the deployed endpoint
+ *   - VERCEL_URL    : Auto-injected by Vercel; fallback to build endpoint URL
  */
 module.exports = {
   firstName: 'Thabo',
