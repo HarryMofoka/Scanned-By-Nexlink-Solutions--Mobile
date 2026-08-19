@@ -20,11 +20,16 @@ export const ProfileSetupScreen: React.FC<{ navigation: any }> = ({ navigation }
 
   const [name, setName] = useState(user.name || '');
   const [phone, setPhone] = useState(user.phone || '');
+  const [email, setEmail] = useState(user.email || '');
   const [showAddModal, setShowAddModal] = useState(false);
 
   const handleCreateCard = async () => {
     if (!name.trim()) return;
-    await updateProfile({ name: name.trim(), phone: phone.trim() });
+    await updateProfile({
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+    });
     setHasCompletedSetup(true);
     navigation.replace('QRCodeReady');
   };
@@ -73,6 +78,20 @@ export const ProfileSetupScreen: React.FC<{ navigation: any }> = ({ navigation }
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
+          />
+        </View>
+
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Email (optional)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="your.email@example.com"
+            placeholderTextColor={COLORS.textMuted}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
           />
         </View>
 

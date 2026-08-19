@@ -20,15 +20,27 @@ export const EditProfileScreen: React.FC<{ navigation: any }> = ({ navigation })
 
   const [name, setName] = useState(user.name || '');
   const [phone, setPhone] = useState(user.phone || '');
+  const [email, setEmail] = useState(user.email || '');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Required', 'Please enter your name.');
       return;
     }
-    await updateProfile({ name: name.trim(), phone: phone.trim() });
-    navigation.goBack();
+    setIsSaving(true);
+    await updateProfile({
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+    });
+    setShowToast(true);
+
+    setTimeout(() => {
+      navigation.goBack();
+    }, 1200);
   };
 
   const handleDeleteCard = () => {
@@ -58,8 +70,16 @@ export const EditProfileScreen: React.FC<{ navigation: any }> = ({ navigation })
         <HeaderNav
           title="Edit profile"
           onBack={() => navigation.goBack()}
-          rightTextAction={{ label: 'Save', onPress: handleSave }}
+          rightTextAction={{ label: isSaving ? 'Saved ✓' : 'Save', onPress: handleSave }}
         />
+
+        {/* Toast confirmation banner */}
+        {showToast && (
+          <View style={styles.toastContainer}>
+            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Text style={styles.toastText}>Profile changes saved!</Text>
+          </View>
+        )}
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Name Input */}
@@ -84,6 +104,21 @@ export const EditProfileScreen: React.FC<{ navigation: any }> = ({ navigation })
             placeholder="Your phone number"
             placeholderTextColor={COLORS.textMuted}
             keyboardType="phone-pad"
+          />
+        </View>
+
+        {/* Email Input */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Email (optional)</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="your.email@example.com"
+            placeholderTextColor={COLORS.textMuted}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
           />
         </View>
 
@@ -250,5 +285,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: COLORS.coral,
+  },
+  toastContainer: {
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.sm,
+    backgroundColor: '#1E1E24',
+    borderColor: '#2D2D36',
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: RADIUS.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  toastText: {
+    color: COLORS.textWhite,
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
