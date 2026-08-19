@@ -214,16 +214,18 @@ Each time someone visits `/api/card`, the function:
 
 ---
 
-## 🛠️ Build Scripts
+## 🛠️ Build & EAS Scripts
 
-| Command            | Description                                 |
-|--------------------|---------------------------------------------|
-| `npm start`        | Start Expo dev server                       |
-| `npm run android`  | Start on Android emulator                   |
-| `npm run ios`      | Start on iOS simulator                      |
-| `npm run web`      | Start web dev server                        |
-| `npm run build`    | Export production bundles to `dist/`         |
-| `npm run build:web`| Export production web bundle to `dist/`      |
+| Command | Description | Output |
+|---------|-------------|--------|
+| `npm start` | Start Expo dev server | Dev client / Expo Go |
+| `npm run android` | Start on Android emulator / device | Native debug build |
+| `npm run ios` | Start on iOS simulator | Native debug build |
+| `npm run web` | Start web dev server | Web preview |
+| `npm run build:web` | Export production web bundle to `dist/` | Static SPA |
+| `npx eas build -p android --profile preview` | Build side-loadable Android APK | Standalone `.apk` |
+| `npx eas build -p android --profile production` | Build Play Store release bundle | Google Play `.aab` |
+| `npx eas build -p ios --profile preview` | Build iOS simulator app | Simulator build |
 
 ---
 

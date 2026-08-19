@@ -41,6 +41,11 @@
       ],
       "expo-sharing",
       "react-native-nfc-manager"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "tapshare-mobile-app"
+      }
+    }
   }
 }
