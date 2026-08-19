@@ -6,11 +6,11 @@ import QRCode from 'react-native-qrcode-svg';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { CustomButton } from '../components/CustomButton';
 import { useApp } from '../context/AppContext';
-import { PROFILE_CONFIG } from '../config/profile';
+import { generateVCard } from '../utils/vcard';
 
 export const QRCodeReadyScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useApp();
-  const profileUrl = PROFILE_CONFIG.cardUrl;
+  const vcardPayload = generateVCard(user);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
@@ -50,7 +50,7 @@ export const QRCodeReadyScreen: React.FC<{ navigation: any }> = ({ navigation })
           {/* QR Code */}
           <View style={styles.qrWrapper}>
             <QRCode
-              value={profileUrl}
+              value={vcardPayload}
               size={180}
               color="#000000"
               backgroundColor="#FFFFFF"

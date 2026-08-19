@@ -11,12 +11,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { useApp } from '../context/AppContext';
-import { PROFILE_CONFIG } from '../config/profile';
+import { generateVCard } from '../utils/vcard';
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, liveScanCount, isLoadingScans } = useApp();
   const insets = useSafeAreaInsets();
-  const profileUrl = PROFILE_CONFIG.cardUrl;
+  const profileUrl = generateVCard(user);
   const headerTopPadding = Math.max(insets.top, 16) + 16;
 
   return (

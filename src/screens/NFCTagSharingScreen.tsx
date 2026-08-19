@@ -12,11 +12,12 @@ import { HeaderNav } from '../components/HeaderNav';
 import { CustomButton } from '../components/CustomButton';
 import { NFCWaveAnimation } from '../components/NFCWaveAnimation';
 import { useApp } from '../context/AppContext';
-import { PROFILE_CONFIG } from '../config/profile';
+import { generateVCard } from '../utils/vcard';
 
 export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useApp();
-  const displayUrl = PROFILE_CONFIG.cardUrl;
+  const vcardPayload = generateVCard(user);
+  const targetSummary = `${user.name || 'Contact'} (vCard)`;
 
   const [currentState, setCurrentState] = useState<'writing' | 'success' | 'error'>('writing');
 
@@ -47,7 +48,7 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
               <View style={styles.qrSquareIconBox}>
                 <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
               </View>
-              <Text style={styles.urlPillText}>Writing: {displayUrl}</Text>
+              <Text style={styles.urlPillText}>Writing: {targetSummary}</Text>
             </View>
 
             {/* Cancel Button */}
@@ -71,7 +72,7 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
               <View style={styles.qrSquareIconBox}>
                 <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
               </View>
-              <Text style={styles.urlPillText}>Writing: {displayUrl}</Text>
+              <Text style={styles.urlPillText}>Writing: {targetSummary}</Text>
             </View>
 
             <CustomButton
@@ -99,7 +100,7 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
               <View style={styles.qrSquareIconBox}>
                 <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
               </View>
-              <Text style={styles.urlPillText}>Writing: {displayUrl}</Text>
+              <Text style={styles.urlPillText}>Writing: {targetSummary}</Text>
             </View>
 
             <CustomButton
@@ -172,7 +173,7 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
                   <MaterialCommunityIcons name="qrcode" size={10} color="#FFFFFF" />
                 </View>
                 <Text style={styles.miniPillText} numberOfLines={1}>
-                  Writing: {displayUrl}
+                  Writing: {targetSummary}
                 </Text>
               </View>
               <TouchableOpacity
@@ -195,7 +196,7 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
                   <MaterialCommunityIcons name="qrcode" size={10} color="#FFFFFF" />
                 </View>
                 <Text style={styles.miniPillText} numberOfLines={1}>
-                  Writing: {displayUrl}
+                  Writing: {targetSummary}
                 </Text>
               </View>
               <TouchableOpacity

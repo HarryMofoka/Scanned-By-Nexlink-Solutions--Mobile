@@ -16,23 +16,22 @@ import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { HeaderNav } from '../components/HeaderNav';
 import { CustomButton } from '../components/CustomButton';
 import { useApp } from '../context/AppContext';
-import { PROFILE_CONFIG } from '../config/profile';
+import { generateVCard } from '../utils/vcard';
 
 export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user } = useApp();
-  const profileUrl = PROFILE_CONFIG.cardUrl;
-  const displayUrl = PROFILE_CONFIG.cardUrl.replace('https://', '');
+  const vcardPayload = generateVCard(user);
+  const displaySubtitle = user.phone || user.email || 'Offline Contact Card';
 
   const qrRef = useRef<any>(null);
 
-  const primaryLink = user.links.length > 0 ? user.links[0].url : 'tapshare.app';
+  const primaryLink = user.links.length > 0 ? user.links[0].url : 'Offline vCard';
 
   const handleShare = async () => {
     try {
       await Share.share({
-        title: `${user.name}'s TapShare Card`,
-        message: `Connect with ${user.name} on TapShare: ${profileUrl}`,
-        url: profileUrl,
+        title: `${user.name}'s Contact Card`,
+        message: `Contact Card for ${user.name}:\nPhone: ${user.phone || 'N/A'}\nEmail: ${user.email || 'N/A'}`,
       });
     } catch (e) {
       console.warn(e);
@@ -78,7 +77,7 @@ export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) 
           {/* QR Code SVG */}
           <View style={styles.qrContainer}>
             <QRCode
-              value={profileUrl}
+              value={vcardPayload}
               size={210}
               color="#000000"
               backgroundColor="#FFFFFF"
@@ -87,7 +86,7 @@ export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) 
           </View>
 
           {/* Display Link */}
-          <Text style={styles.displayUrlText}>{displayUrl}</Text>
+          <Text style={styles.displayUrlText}>{displaySubtitle}</Text>
         </View>
 
         {/* Bottom Actions Row */}
