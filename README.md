@@ -65,7 +65,8 @@ A lightweight Vercel serverless function is included for **tracked sharing**:
 
 - Serves the same vCard data as a downloadable `.vcf` file via HTTP.
 - Logs each scan to CountAPI for a running total displayed in the Stats screen.
-- This is an **add-on** — the app works fully without it.
+- To enable: deploy `api/card.js` and paste your URL into **Settings → Scan tracking (optional)**.
+- If left blank, the app remains 100% local, QR/NFC embed raw vCard data, and Stats screen clearly explains tracking is off.
 
 ---
 

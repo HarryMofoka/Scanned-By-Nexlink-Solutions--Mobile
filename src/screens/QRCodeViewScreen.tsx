@@ -19,9 +19,10 @@ import { useApp } from '../context/AppContext';
 import { generateVCard } from '../utils/vcard';
 
 export const QRCodeViewScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { user } = useApp();
-  const vcardPayload = generateVCard(user);
-  const displaySubtitle = user.phone || user.email || 'Offline Contact Card';
+  const { user, trackingUrl } = useApp();
+  // If tracking is enabled, QR points at the deployed URL; otherwise embed full vCard locally
+  const vcardPayload = trackingUrl || generateVCard(user);
+  const displaySubtitle = trackingUrl || user.phone || user.email || 'Offline Contact Card';
 
   const qrRef = useRef<any>(null);
 

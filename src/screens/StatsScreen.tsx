@@ -12,7 +12,7 @@ import { HeaderNav } from '../components/HeaderNav';
 import { useApp } from '../context/AppContext';
 
 export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { liveScanCount, isLoadingScans } = useApp();
+  const { liveScanCount, isLoadingScans, trackingUrl } = useApp();
   const [activeFilter, setActiveFilter] = useState<'views' | 'taps' | 'nfc'>('views');
 
   return (
@@ -38,6 +38,29 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         />
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+          {/* If no tracking URL is configured, show an explanation instead of counts */}
+          {!trackingUrl ? (
+            <View style={styles.noTrackingCard}>
+              <View style={styles.noTrackingIconCircle}>
+                <Ionicons name="analytics-outline" size={48} color={COLORS.periwinkle} />
+              </View>
+              <Text style={styles.noTrackingTitle}>Stats require tracking</Text>
+              <Text style={styles.noTrackingBody}>
+                Add your deployed endpoint URL in Settings to start counting scans.
+                Without it, your QR codes and NFC tags work fully offline — you just
+                won't see a scan count here.
+              </Text>
+              <TouchableOpacity
+                style={styles.noTrackingBtn}
+                onPress={() => navigation.navigate('Settings')}
+              >
+                <Ionicons name="settings-outline" size={18} color="#FFFFFF" />
+                <Text style={styles.noTrackingBtnText}>Open Settings</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
           {/* Hero Card: Prominent Total Scans Display */}
           <View style={styles.coralHeroCard}>
             <View style={styles.chartHeaderRow}>
@@ -128,6 +151,8 @@ export const StatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
             <Text style={styles.metricLabel}>Contact Format</Text>
           </View>
         </View>
+            </>
+          )}
       </ScrollView>
       </View>
     </View>
@@ -360,5 +385,50 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 4,
     textAlign: 'center',
+  },
+  noTrackingCard: {
+    backgroundColor: COLORS.cardDark,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.borderDark,
+  },
+  noTrackingIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(124, 131, 253, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+  },
+  noTrackingTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.textWhite,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  noTrackingBody: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: SPACING.lg,
+  },
+  noTrackingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: COLORS.periwinkle,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: RADIUS.lg,
+  },
+  noTrackingBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

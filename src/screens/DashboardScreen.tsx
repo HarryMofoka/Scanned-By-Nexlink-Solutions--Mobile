@@ -14,9 +14,9 @@ import { useApp } from '../context/AppContext';
 import { generateVCard } from '../utils/vcard';
 
 export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { user, liveScanCount, isLoadingScans } = useApp();
+  const { user, liveScanCount, isLoadingScans, trackingUrl } = useApp();
   const insets = useSafeAreaInsets();
-  const profileUrl = generateVCard(user);
+  const profileUrl = trackingUrl || generateVCard(user);
   const headerTopPadding = Math.max(insets.top, 16) + 16;
 
   return (
@@ -103,10 +103,14 @@ export const DashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) =
         >
           <View style={styles.dataLeftCol}>
             <Text style={styles.dataViewsCount}>
-              {isLoadingScans ? '...' : liveScanCount}
+              {!trackingUrl ? '—' : isLoadingScans ? '...' : liveScanCount}
             </Text>
-            <Text style={styles.dataViewsLabel}>total scans</Text>
-            <Text style={styles.dataWeeklyTrend}>Live CountAPI scans</Text>
+            <Text style={styles.dataViewsLabel}>
+              {!trackingUrl ? 'stats (offline)' : 'total scans'}
+            </Text>
+            <Text style={styles.dataWeeklyTrend}>
+              {!trackingUrl ? 'Enable tracking in Settings' : 'Live CountAPI scans'}
+            </Text>
           </View>
 
           <View style={styles.dataRightCol}>

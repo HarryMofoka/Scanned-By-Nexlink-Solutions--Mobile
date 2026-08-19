@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
@@ -14,7 +15,12 @@ import { CustomButton } from '../components/CustomButton';
 import { useApp } from '../context/AppContext';
 
 export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { user, logout } = useApp();
+  const { user, logout, trackingUrl, setTrackingUrl } = useApp();
+  const [urlInput, setUrlInput] = useState(trackingUrl);
+
+  useEffect(() => {
+    setUrlInput(trackingUrl);
+  }, [trackingUrl]);
 
   const handleLogout = async () => {
     Alert.alert('Log out', 'Are you sure you want to log out of TapShare?', [
@@ -119,6 +125,44 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
               <Text style={styles.settingRowLabel}>Terms of service</Text>
               <Ionicons name="chevron-forward" size={18} color={COLORS.textDarkSecondary} />
             </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* SCAN TRACKING (OPTIONAL) Section */}
+        <View style={styles.sectionWrapper}>
+          <Text style={styles.sectionHeaderTitle}>SCAN TRACKING (OPTIONAL)</Text>
+
+          <View style={styles.sectionWhiteCard}>
+            <View style={{ paddingVertical: 16, paddingHorizontal: 4 }}>
+              <Text style={styles.settingRowLabel}>Your deployed endpoint URL</Text>
+              <Text style={styles.trackingExplainer}>
+                Enable tracking by deploying your own copy of the backend and
+                pasting its URL here. Leave blank to keep everything local and
+                private — you just won't see a scan count.
+              </Text>
+              <TextInput
+                style={styles.trackingInput}
+                value={urlInput}
+                onChangeText={setUrlInput}
+                placeholder="https://your-app.vercel.app/api/card"
+                placeholderTextColor={COLORS.textMuted}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                returnKeyType="done"
+                onSubmitEditing={() => setTrackingUrl(urlInput)}
+                onBlur={() => setTrackingUrl(urlInput)}
+              />
+              {trackingUrl ? (
+                <TouchableOpacity
+                  style={styles.clearUrlBtn}
+                  onPress={() => { setUrlInput(''); setTrackingUrl(''); }}
+                >
+                  <Ionicons name="close-circle" size={16} color={COLORS.coral} />
+                  <Text style={styles.clearUrlText}>Remove endpoint</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
           </View>
         </View>
 
@@ -241,5 +285,33 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     textAlign: 'center',
     marginTop: SPACING.xs,
+  },
+  trackingExplainer: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+    marginTop: 6,
+    marginBottom: 12,
+  },
+  trackingInput: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: RADIUS.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: COLORS.textDark,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  clearUrlBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  clearUrlText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.coral,
   },
 });

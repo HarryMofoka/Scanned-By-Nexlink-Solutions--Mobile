@@ -62,6 +62,9 @@ interface AppContextType {
   liveScanCount: number;
   isLoadingScans: boolean;
   nfcWriteState: 'idle' | 'writing' | 'success' | 'error';
+  /** Optional deployed endpoint URL for tracked sharing (e.g. https://my-app.vercel.app/api/card). */
+  trackingUrl: string;
+  setTrackingUrl: (url: string) => Promise<void>;
   login: (email?: string) => Promise<void>;
   signup: (email?: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -86,6 +89,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [liveScanCount, setLiveScanCount] = useState<number>(0);
   const [isLoadingScans, setIsLoadingScans] = useState<boolean>(true);
   const [nfcWriteState, setNfcWriteState] = useState<'idle' | 'writing' | 'success' | 'error'>('idle');
+  const [trackingUrl, setTrackingUrlState] = useState<string>('');
 
   useEffect(() => {
     loadStoredData();
@@ -98,16 +102,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
+      // Load persisted tracking URL (may be empty string = tracking off)
+      const storedTrackingUrl = await AsyncStorage.getItem('@tapshare_tracking_url');
+      if (storedTrackingUrl) {
+        setTrackingUrlState(storedTrackingUrl);
+      }
     } catch (e) {
-      console.warn('Failed to load stored user', e);
+      console.warn('Failed to load stored data', e);
     }
   };
 
+  /**
+   * Fetches the live scan count from CountAPI.
+   * Only makes a network call if a trackingUrl is configured;
+   * otherwise sets count to 0 with no network request.
+   */
   const fetchLiveScanCount = async () => {
+    // Read the latest tracking URL from storage (state may not have hydrated yet on first call)
+    let url = trackingUrl;
+    if (!url) {
+      try {
+        const stored = await AsyncStorage.getItem('@tapshare_tracking_url');
+        if (stored) url = stored;
+      } catch (_) { /* ignore */ }
+    }
+
+    // No tracking URL configured → no network call, no scan count
+    if (!url) {
+      setLiveScanCount(0);
+      setIsLoadingScans(false);
+      return;
+    }
+
     setIsLoadingScans(true);
     try {
-      // Task 3: Use CountAPI's read-only 'get' endpoint (does not increment) to pull current total
-      const countApiKey = PROFILE_CONFIG.countApiKey || 'tapshare-thabo';
+      // Derive CountAPI namespace from tracking URL hostname or profile config
+      let countApiKey = PROFILE_CONFIG.countApiKey || 'tapshare-thabo';
+      try {
+        const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+        const hostKey = parsed.hostname.replace(/\.vercel\.app$/, '').replace(/[^a-zA-Z0-9-_]/g, '-');
+        if (hostKey && hostKey !== 'localhost') {
+          countApiKey = hostKey;
+        }
+      } catch (_) {
+        // Use default countApiKey if URL parsing fails
+      }
+
       const response = await fetch(`https://api.countapi.xyz/get/${countApiKey}/scans`);
       
       if (response.ok) {
@@ -120,7 +160,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           thisWeekViews: count,
         }));
       } else {
-        // Fallback for key not created yet or 0 state
         setLiveScanCount(0);
       }
     } catch (e) {
@@ -129,6 +168,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       setIsLoadingScans(false);
     }
+  };
+
+  /** Persist the user's deployed endpoint URL and re-fetch scan count. */
+  const setTrackingUrl = async (url: string) => {
+    const trimmed = url.trim();
+    setTrackingUrlState(trimmed);
+    try {
+      if (trimmed) {
+        await AsyncStorage.setItem('@tapshare_tracking_url', trimmed);
+      } else {
+        await AsyncStorage.removeItem('@tapshare_tracking_url');
+      }
+    } catch (e) {
+      console.warn('Failed to save tracking URL', e);
+    }
+    // Re-fetch scan count with the new URL state
+    // (use a small delay so React state has flushed)
+    setTimeout(() => fetchLiveScanCount(), 100);
   };
 
   const saveUser = async (newUser: UserProfile) => {
@@ -214,6 +271,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         liveScanCount,
         isLoadingScans,
         nfcWriteState,
+        trackingUrl,
+        setTrackingUrl,
         login,
         signup,
         logout,

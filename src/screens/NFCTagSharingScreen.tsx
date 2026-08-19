@@ -15,9 +15,10 @@ import { useApp } from '../context/AppContext';
 import { generateVCard } from '../utils/vcard';
 
 export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { user } = useApp();
-  const vcardPayload = generateVCard(user);
-  const targetSummary = `${user.name || 'Contact'} (vCard)`;
+  const { user, trackingUrl } = useApp();
+  // If tracking is enabled, NFC writes the deployed URL; otherwise embed full vCard locally
+  const vcardPayload = trackingUrl || generateVCard(user);
+  const targetSummary = trackingUrl ? trackingUrl : `${user.name || 'Contact'} (vCard)`;
 
   const [currentState, setCurrentState] = useState<'writing' | 'success' | 'error'>('writing');
 
