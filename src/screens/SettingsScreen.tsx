@@ -15,39 +15,28 @@ import { CustomButton } from '../components/CustomButton';
 import { useApp } from '../context/AppContext';
 
 export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { user, logout, trackingUrl, setTrackingUrl } = useApp();
+  const { user, deleteCard, trackingUrl, setTrackingUrl } = useApp();
   const [urlInput, setUrlInput] = useState(trackingUrl);
 
   useEffect(() => {
     setUrlInput(trackingUrl);
   }, [trackingUrl]);
 
-  const handleLogout = async () => {
-    Alert.alert('Log out', 'Are you sure you want to log out of TapShare?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log out',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-          navigation.replace('GetStarted');
-        },
-      },
-    ]);
-  };
-
-  const handleDeleteAccount = () => {
+  const handleResetCard = () => {
     Alert.alert(
-      'Delete account',
-      'Permanently delete your account and all profile data? This cannot be undone.',
+      'Reset my card?',
+      'This will permanently delete your saved profile from this device. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete Account',
+          text: 'Reset Card',
           style: 'destructive',
           onPress: async () => {
-            await logout();
-            navigation.replace('GetStarted');
+            await deleteCard();
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'GetStarted' }],
+            });
           },
         },
       ]
@@ -78,30 +67,7 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
           <Ionicons name="chevron-forward" size={20} color={COLORS.textDarkSecondary} />
         </TouchableOpacity>
 
-        {/* ACCOUNT Section */}
-        <View style={styles.sectionWrapper}>
-          <Text style={styles.sectionHeaderTitle}>ACCOUNT</Text>
 
-          <View style={styles.sectionWhiteCard}>
-            <TouchableOpacity
-              style={styles.settingRow}
-              onPress={() => Alert.alert('Change Password', 'Enter your existing password to reset.')}
-            >
-              <Text style={styles.settingRowLabel}>Change password</Text>
-              <Ionicons name="chevron-forward" size={18} color={COLORS.textDarkSecondary} />
-            </TouchableOpacity>
-
-            <View style={styles.divider} />
-
-            <TouchableOpacity
-              style={styles.settingRow}
-              onPress={() => Alert.alert('Email Preferences', 'Email notification settings updated.')}
-            >
-              <Text style={styles.settingRowLabel}>Email preferences</Text>
-              <Ionicons name="chevron-forward" size={18} color={COLORS.textDarkSecondary} />
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* ABOUT Section */}
         <View style={styles.sectionWrapper}>
@@ -169,8 +135,8 @@ export const SettingsScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           <CustomButton
-            title="Reset Profile to Defaults"
-            onPress={handleLogout}
+            title="Reset my card"
+            onPress={handleResetCard}
             variant="secondary"
           />
         </View>

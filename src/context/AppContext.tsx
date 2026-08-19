@@ -55,7 +55,6 @@ interface AppContextType {
   /** Optional deployed endpoint URL for tracked sharing (e.g. https://my-app.vercel.app/api/card). */
   trackingUrl: string;
   setTrackingUrl: (url: string) => Promise<void>;
-  logout: () => Promise<void>;
   updateProfile: (updated: Partial<UserProfile>) => Promise<void>;
   addLink: (link: Omit<SocialLink, 'id'>) => Promise<void>;
   removeLink: (linkId: string) => Promise<void>;
@@ -194,13 +193,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const logout = async () => {
-    // Reset to empty profile for onboarding
-    setUser(EMPTY_PROFILE);
-    setHasCompletedSetup(false);
-    await AsyncStorage.removeItem('@tapshare_user');
-  };
-
   const updateProfile = async (updated: Partial<UserProfile>) => {
     let newInitials = user.avatarInitials;
     if (updated.name) {
@@ -235,8 +227,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await saveUser({ ...user, links: nextLinks });
   };
 
+  /** Clears all on-device profile and tracking data, returning to first-run setup. */
   const deleteCard = async () => {
-    await logout();
+    setUser(EMPTY_PROFILE);
+    setHasCompletedSetup(false);
+    setLiveScanCount(0);
+    setTrackingUrlState('');
+    try {
+      await AsyncStorage.removeItem('@tapshare_user');
+      await AsyncStorage.removeItem('@tapshare_tracking_url');
+    } catch (e) {
+      console.warn('Failed to clear stored profile', e);
+    }
   };
 
   const setNfcState = (state: 'idle' | 'writing' | 'success' | 'error') => {
@@ -256,7 +258,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         nfcWriteState,
         trackingUrl,
         setTrackingUrl,
-        logout,
         updateProfile,
         addLink,
         removeLink,

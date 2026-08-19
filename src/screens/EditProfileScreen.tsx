@@ -33,16 +33,19 @@ export const EditProfileScreen: React.FC<{ navigation: any }> = ({ navigation })
 
   const handleDeleteCard = () => {
     Alert.alert(
-      'Delete my card?',
-      'Are you sure you want to delete your contact card profile? This action cannot be undone.',
+      'Reset my card?',
+      'This will permanently delete your saved profile from this device. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete',
+          text: 'Reset Card',
           style: 'destructive',
           onPress: async () => {
             await deleteCard();
-            navigation.replace('ProfileSetup');
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'GetStarted' }],
+            });
           },
         },
       ]
