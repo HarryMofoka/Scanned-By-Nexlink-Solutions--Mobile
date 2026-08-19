@@ -1,12 +1,25 @@
-import React, { useState } from 'react';
+/**
+ * NFCTagSharingScreen.tsx — Hardware NFC Tag Writer for TapShare.
+ *
+ * NOTE: Real hardware NFC tag reading/writing requires a Custom Expo Dev Client
+ * or a native standalone/EAS build (`npx expo run:android` / `npx expo run:ios` / `eas build`).
+ * It does NOT function inside standard Expo Go because standard Expo Go does not bundle
+ * custom native modules like react-native-nfc-manager.
+ *
+ * When run in Expo Go or on a device without NFC hardware, this screen gracefully detects
+ * that NFC is unsupported and presents a clear, actionable explanation rather than failing silently.
+ */
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import NfcManager, { NfcTech, Ndef } from 'react-native-nfc-manager';
 import { COLORS, RADIUS, SPACING } from '../constants/theme';
 import { HeaderNav } from '../components/HeaderNav';
 import { CustomButton } from '../components/CustomButton';
@@ -14,19 +27,108 @@ import { NFCWaveAnimation } from '../components/NFCWaveAnimation';
 import { useApp } from '../context/AppContext';
 import { generateVCard } from '../utils/vcard';
 
+type NFCState = 'checking' | 'writing' | 'success' | 'error' | 'unsupported' | 'disabled';
+
 export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, trackingUrl } = useApp();
   // If tracking is enabled, NFC writes the deployed URL; otherwise embed full vCard locally
   const vcardPayload = trackingUrl || generateVCard(user);
   const targetSummary = trackingUrl ? trackingUrl : `${user.name || 'Contact'} (vCard)`;
 
-  const [currentState, setCurrentState] = useState<'writing' | 'success' | 'error'>('writing');
+  const [currentState, setCurrentState] = useState<NFCState>('checking');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const isMounted = useRef<boolean>(true);
 
-  const handleSimulateTap = () => {
-    if (currentState === 'writing') {
-      setCurrentState('success');
-    } else {
+  useEffect(() => {
+    isMounted.current = true;
+    startNfcWriteSession();
+
+    return () => {
+      isMounted.current = false;
+      cancelNfcSession();
+    };
+  }, []);
+
+  const cancelNfcSession = async () => {
+    try {
+      if (NfcManager && typeof NfcManager.cancelTechnologyRequest === 'function') {
+        await NfcManager.cancelTechnologyRequest();
+      }
+    } catch (_) {
+      // Ignore cancellation cleanup errors
+    }
+  };
+
+  const startNfcWriteSession = async () => {
+    try {
+      setCurrentState('checking');
+      setErrorMessage('');
+
+      // Verify NfcManager is available (not running on web or unlinked environment)
+      if (Platform.OS === 'web' || !NfcManager || typeof NfcManager.isSupported !== 'function') {
+        if (isMounted.current) setCurrentState('unsupported');
+        return;
+      }
+
+      await NfcManager.start();
+      const isSupported = await NfcManager.isSupported();
+
+      if (!isSupported) {
+        if (isMounted.current) setCurrentState('unsupported');
+        return;
+      }
+
+      const isEnabled = await NfcManager.isEnabled();
+      if (!isEnabled) {
+        if (isMounted.current) setCurrentState('disabled');
+        return;
+      }
+
+      if (!isMounted.current) return;
       setCurrentState('writing');
+
+      // Request NDEF Technology Session
+      await NfcManager.requestTechnology(NfcTech.Ndef);
+
+      // Encode NDEF record: URL if trackingUrl is set, otherwise Text record with vCard
+      let bytes: number[] | null = null;
+      if (vcardPayload.startsWith('http://') || vcardPayload.startsWith('https://')) {
+        bytes = Ndef.encodeMessage([Ndef.uriRecord(vcardPayload)]);
+      } else {
+        bytes = Ndef.encodeMessage([Ndef.textRecord(vcardPayload)]);
+      }
+
+      if (bytes) {
+        await NfcManager.ndefHandler.writeNdefMessage(bytes);
+        if (isMounted.current) {
+          setCurrentState('success');
+        }
+      } else {
+        throw new Error('Failed to encode NFC record.');
+      }
+    } catch (ex: any) {
+      console.warn('NFC Write Error:', ex);
+      if (isMounted.current) {
+        // Don't treat user-cancellation as a hard failure
+        const msg = ex?.message || String(ex);
+        if (msg.includes('cancelled') || msg.includes('Canceled')) {
+          return;
+        }
+        setErrorMessage(msg || 'Move closer and try again, or use a writable NDEF tag.');
+        setCurrentState('error');
+      }
+    } finally {
+      await cancelNfcSession();
+    }
+  };
+
+  const handleOpenSettings = async () => {
+    try {
+      if (NfcManager && typeof NfcManager.goToNfcSetting === 'function') {
+        await NfcManager.goToNfcSetting();
+      }
+    } catch (_) {
+      // Fallback
     }
   };
 
@@ -36,180 +138,155 @@ export const NFCTagSharingScreen: React.FC<{ navigation: any }> = ({ navigation 
         <HeaderNav title="Write NFC tag" onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* State 1: Active Writing View */}
-        {currentState === 'writing' && (
-          <View style={styles.stateWrapper}>
-            <NFCWaveAnimation active={true} />
-
-            <Text style={styles.mainTitle}>Hold your phone near the tag.</Text>
-            <Text style={styles.subTitle}>Keep it close until you feel a vibration.</Text>
-
-            {/* Target URL Pill Badge */}
-            <View style={styles.urlPillBadge}>
-              <View style={styles.qrSquareIconBox}>
-                <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
-              </View>
-              <Text style={styles.urlPillText}>Writing: {targetSummary}</Text>
+          {/* State: Checking Hardware */}
+          {currentState === 'checking' && (
+            <View style={styles.stateWrapper}>
+              <NFCWaveAnimation active={false} />
+              <Text style={styles.mainTitle}>Checking NFC...</Text>
+              <Text style={styles.subTitle}>Initializing NFC subsystem</Text>
             </View>
+          )}
 
-            {/* Cancel Button */}
-            <TouchableOpacity style={styles.cancelOutlineBtn} onPress={() => navigation.goBack()}>
-              <Text style={styles.cancelOutlineText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          {/* State 1: Active Writing View */}
+          {currentState === 'writing' && (
+            <View style={styles.stateWrapper}>
+              <NFCWaveAnimation active={true} />
 
-        {/* State 2: Tag Programmed Success View */}
-        {currentState === 'success' && (
-          <View style={styles.stateWrapper}>
-            <View style={styles.successIconCircle}>
-              <Ionicons name="checkmark" size={60} color="#FFFFFF" />
-            </View>
+              <Text style={styles.mainTitle}>Hold phone near tag.</Text>
+              <Text style={styles.subTitle}>Keep it close until writing completes.</Text>
 
-            <Text style={styles.mainTitle}>Tag programmed!</Text>
-            <Text style={styles.subTitle}>Anyone who taps this tag will see your card.</Text>
-
-            <View style={styles.urlPillBadge}>
-              <View style={styles.qrSquareIconBox}>
-                <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
-              </View>
-              <Text style={styles.urlPillText}>Writing: {targetSummary}</Text>
-            </View>
-
-            <CustomButton
-              title="Done"
-              onPress={() => navigation.goBack()}
-              variant="primary"
-              style={{ marginTop: SPACING.md }}
-            />
-          </View>
-        )}
-
-        {/* State 3: Error View */}
-        {currentState === 'error' && (
-          <View style={styles.stateWrapper}>
-            <View style={styles.errorIconCircle}>
-              <Ionicons name="alert" size={50} color={COLORS.coral} />
-            </View>
-
-            <Text style={styles.mainTitle}>Couldn't write to tag</Text>
-            <Text style={styles.subTitle}>
-              Move closer and try again, or use a new tag.
-            </Text>
-
-            <View style={styles.urlPillBadge}>
-              <View style={styles.qrSquareIconBox}>
-                <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
-              </View>
-              <Text style={styles.urlPillText}>Writing: {targetSummary}</Text>
-            </View>
-
-            <CustomButton
-              title="Try again"
-              onPress={() => setCurrentState('writing')}
-              variant="primary"
-              style={{ marginTop: SPACING.md }}
-            />
-
-            <TouchableOpacity style={styles.cancelTextBtn} onPress={() => navigation.goBack()}>
-              <Text style={styles.cancelTextOnly}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Interactive Simulator Bar */}
-        <View style={styles.simulatorSection}>
-          <View style={styles.dividerLineRow}>
-            <View style={styles.line} />
-            <Text style={styles.dividerLabel}>Simulate tag interaction</Text>
-            <View style={styles.line} />
-          </View>
-
-          <View style={styles.simButtonsRow}>
-            <TouchableOpacity
-              style={[
-                styles.simChip,
-                currentState === 'writing' && { backgroundColor: COLORS.periwinkle },
-              ]}
-              onPress={() => setCurrentState('writing')}
-            >
-              <Text style={styles.simChipText}>Writing</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.simChip,
-                currentState === 'success' && { backgroundColor: COLORS.coral },
-              ]}
-              onPress={() => setCurrentState('success')}
-            >
-              <Text style={styles.simChipText}>Programmed ✓</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.simChip,
-                currentState === 'error' && { backgroundColor: COLORS.error },
-              ]}
-              onPress={() => setCurrentState('error')}
-            >
-              <Text style={styles.simChipText}>Error ✗</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Showcase Other States grid from screenshot */}
-        <View style={styles.otherStatesGrid}>
-          <Text style={styles.otherStatesTitle}>Other states</Text>
-          <View style={styles.gridRow}>
-            {/* Card 1: Success preview */}
-            <View style={styles.miniStateCard}>
-              <View style={[styles.miniIconCircle, { backgroundColor: COLORS.coral }]}>
-                <Ionicons name="checkmark" size={24} color="#FFFFFF" />
-              </View>
-              <Text style={styles.miniCardTitle}>Tag programmed!</Text>
-              <Text style={styles.miniCardSub}>Anyone who taps this tag will see your card.</Text>
-              <View style={styles.miniPill}>
-                <View style={styles.miniQrIcon}>
-                  <MaterialCommunityIcons name="qrcode" size={10} color="#FFFFFF" />
+              {/* Target URL Pill Badge */}
+              <View style={styles.urlPillBadge}>
+                <View style={styles.qrSquareIconBox}>
+                  <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
                 </View>
-                <Text style={styles.miniPillText} numberOfLines={1}>
+                <Text style={styles.urlPillText} numberOfLines={1}>
                   Writing: {targetSummary}
                 </Text>
               </View>
-              <TouchableOpacity
-                style={styles.miniBtnPrimary}
-                onPress={() => setCurrentState('success')}
-              >
-                <Text style={styles.miniBtnText}>Done</Text>
+
+              {/* Cancel Button */}
+              <TouchableOpacity style={styles.cancelOutlineBtn} onPress={() => navigation.goBack()}>
+                <Text style={styles.cancelOutlineText}>Cancel</Text>
               </TouchableOpacity>
             </View>
+          )}
 
-            {/* Card 2: Error preview */}
-            <View style={styles.miniStateCard}>
-              <View style={[styles.miniIconCircle, { backgroundColor: '#231B19' }]}>
-                <Ionicons name="alert" size={24} color={COLORS.coral} />
+          {/* State 2: Tag Programmed Success View */}
+          {currentState === 'success' && (
+            <View style={styles.stateWrapper}>
+              <View style={styles.successIconCircle}>
+                <Ionicons name="checkmark" size={60} color="#FFFFFF" />
               </View>
-              <Text style={styles.miniCardTitle}>Couldn't write to tag</Text>
-              <Text style={styles.miniCardSub}>Move closer and try again, or use a new tag.</Text>
-              <View style={styles.miniPill}>
-                <View style={styles.miniQrIcon}>
-                  <MaterialCommunityIcons name="qrcode" size={10} color="#FFFFFF" />
+
+              <Text style={styles.mainTitle}>Tag programmed!</Text>
+              <Text style={styles.subTitle}>Anyone who taps this tag will see your contact card.</Text>
+
+              <View style={styles.urlPillBadge}>
+                <View style={styles.qrSquareIconBox}>
+                  <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
                 </View>
-                <Text style={styles.miniPillText} numberOfLines={1}>
-                  Writing: {targetSummary}
+                <Text style={styles.urlPillText} numberOfLines={1}>
+                  Written: {targetSummary}
                 </Text>
               </View>
-              <TouchableOpacity
-                style={styles.miniBtnPrimary}
-                onPress={() => setCurrentState('error')}
-              >
-                <Text style={styles.miniBtnText}>Try again</Text>
+
+              <CustomButton
+                title="Done"
+                onPress={() => navigation.goBack()}
+                variant="primary"
+                style={{ marginTop: SPACING.md }}
+              />
+            </View>
+          )}
+
+          {/* State 3: Error View */}
+          {currentState === 'error' && (
+            <View style={styles.stateWrapper}>
+              <View style={styles.errorIconCircle}>
+                <Ionicons name="alert" size={50} color={COLORS.coral} />
+              </View>
+
+              <Text style={styles.mainTitle}>Couldn't write to tag</Text>
+              <Text style={styles.subTitle}>
+                {errorMessage || 'Move closer and try again, or ensure the tag is unlocked.'}
+              </Text>
+
+              <View style={styles.urlPillBadge}>
+                <View style={styles.qrSquareIconBox}>
+                  <MaterialCommunityIcons name="qrcode" size={18} color="#FFFFFF" />
+                </View>
+                <Text style={styles.urlPillText} numberOfLines={1}>
+                  Target: {targetSummary}
+                </Text>
+              </View>
+
+              <CustomButton
+                title="Try again"
+                onPress={startNfcWriteSession}
+                variant="primary"
+                style={{ marginTop: SPACING.md }}
+              />
+
+              <TouchableOpacity style={styles.cancelTextBtn} onPress={() => navigation.goBack()}>
+                <Text style={styles.cancelTextOnly}>Cancel</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </ScrollView>
+          )}
+
+          {/* State 4: NFC Unsupported / Expo Go Environment */}
+          {currentState === 'unsupported' && (
+            <View style={styles.stateWrapper}>
+              <View style={styles.warningIconCircle}>
+                <Ionicons name="hardware-chip-outline" size={48} color={COLORS.periwinkle} />
+              </View>
+
+              <Text style={styles.mainTitle}>NFC not available</Text>
+              <Text style={styles.subTitle}>
+                This device doesn't have NFC hardware, or the app is running in standard Expo Go where custom native NFC modules are unavailable.
+              </Text>
+
+              <View style={styles.devClientNoticeCard}>
+                <Ionicons name="information-circle-outline" size={20} color={COLORS.periwinkle} style={{ marginRight: 10 }} />
+                <Text style={styles.devClientNoticeText}>
+                  To use real NFC writing, create a Custom Expo Dev Client or EAS Build (`npx expo run:android` or `run:ios`).
+                </Text>
+              </View>
+
+              <CustomButton
+                title="Go back"
+                onPress={() => navigation.goBack()}
+                variant="primary"
+                style={{ marginTop: SPACING.lg }}
+              />
+            </View>
+          )}
+
+          {/* State 5: NFC Disabled in Settings */}
+          {currentState === 'disabled' && (
+            <View style={styles.stateWrapper}>
+              <View style={styles.warningIconCircle}>
+                <MaterialCommunityIcons name="nfc" size={52} color={COLORS.warning} />
+              </View>
+
+              <Text style={styles.mainTitle}>NFC is turned off</Text>
+              <Text style={styles.subTitle}>
+                Please enable NFC in your device settings to write your contact card to a physical tag.
+              </Text>
+
+              <CustomButton
+                title="Open Settings"
+                onPress={handleOpenSettings}
+                variant="primary"
+                style={{ marginTop: SPACING.lg }}
+              />
+
+              <TouchableOpacity style={styles.cancelTextBtn} onPress={startNfcWriteSession}>
+                <Text style={styles.cancelTextOnly}>Check again</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
       </View>
     </View>
   );
@@ -235,6 +312,7 @@ const styles = StyleSheet.create({
   stateWrapper: {
     width: '100%',
     alignItems: 'center',
+    paddingVertical: SPACING.md,
   },
   mainTitle: {
     fontSize: 28,
@@ -244,11 +322,13 @@ const styles = StyleSheet.create({
     letterSpacing: -0.6,
   },
   subTitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textSecondary,
     textAlign: 'center',
     marginTop: 6,
     marginBottom: SPACING.lg,
+    lineHeight: 22,
+    paddingHorizontal: SPACING.md,
   },
   urlPillBadge: {
     backgroundColor: '#FFFFFF',
@@ -258,6 +338,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.xl,
+    maxWidth: '90%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -274,9 +355,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   urlPillText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.textDark,
+    flexShrink: 1,
   },
   cancelOutlineBtn: {
     width: '100%',
@@ -317,6 +399,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: SPACING.lg,
   },
+  warningIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#1E1E24',
+    borderWidth: 2,
+    borderColor: COLORS.borderDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: SPACING.lg,
+  },
+  devClientNoticeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#16161A',
+    borderWidth: 1,
+    borderColor: COLORS.borderDark,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginTop: SPACING.sm,
+    width: '100%',
+  },
+  devClientNoticeText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+    flex: 1,
+  },
   cancelTextBtn: {
     marginTop: SPACING.md,
     paddingVertical: 8,
@@ -325,122 +435,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.periwinkle,
-  },
-  simulatorSection: {
-    width: '100%',
-    marginVertical: SPACING.xl,
-  },
-  dividerLineRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#27272A',
-  },
-  dividerLabel: {
-    marginHorizontal: 12,
-    color: COLORS.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  simButtonsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'center',
-  },
-  simChip: {
-    backgroundColor: '#1E1E24',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: RADIUS.full,
-  },
-  simChipText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  otherStatesGrid: {
-    width: '100%',
-  },
-  otherStatesTitle: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    marginBottom: SPACING.md,
-  },
-  gridRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  miniStateCard: {
-    flex: 1,
-    backgroundColor: '#16161A',
-    borderRadius: RADIUS.lg,
-    padding: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#23232A',
-  },
-  miniIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  miniCardTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.textWhite,
-    textAlign: 'center',
-  },
-  miniCardSub: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 2,
-    marginBottom: 8,
-    height: 32,
-  },
-  miniPill: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: RADIUS.full,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-    maxWidth: '100%',
-  },
-  miniQrIcon: {
-    width: 14,
-    height: 14,
-    borderRadius: 3,
-    backgroundColor: COLORS.coral,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 4,
-  },
-  miniPillText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: COLORS.textDark,
-  },
-  miniBtnPrimary: {
-    backgroundColor: COLORS.coral,
-    width: '100%',
-    height: 36,
-    borderRadius: RADIUS.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  miniBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
   },
 });

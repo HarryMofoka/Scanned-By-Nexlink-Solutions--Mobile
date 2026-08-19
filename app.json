@@ -39,7 +39,8 @@
           "backgroundColor": "#0D0D0E"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "react-native-nfc-manager"
     ]
   }
 }
