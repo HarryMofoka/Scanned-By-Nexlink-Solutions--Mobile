@@ -22,27 +22,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProfile, UserStats, SocialLink } from '../types';
 import { PROFILE_CONFIG } from '../config/profile';
 
-const INITIAL_PROFILE: UserProfile = {
-  id: 'tapshare-thabo',
-  name: PROFILE_CONFIG.name,
-  email: PROFILE_CONFIG.email,
-  phone: PROFILE_CONFIG.phone,
-  avatarInitials: PROFILE_CONFIG.avatarInitials,
-  qrCodeUrl: PROFILE_CONFIG.cardUrl,
+const EMPTY_PROFILE: UserProfile = {
+  id: 'user_profile',
+  name: '',
+  email: '',
+  phone: '',
+  avatarInitials: '',
+  qrCodeUrl: '',
   createdAt: new Date().toISOString(),
-  links: PROFILE_CONFIG.links.map((link, idx) => ({
-    id: `l_${idx + 1}`,
-    type: link.label.toLowerCase().includes('linkedin')
-      ? 'linkedin'
-      : link.label.toLowerCase().includes('instagram')
-      ? 'instagram'
-      : link.label.toLowerCase().includes('github')
-      ? 'github'
-      : 'website',
-    title: link.label,
-    url: link.url,
-    iconName: link.label.toLowerCase(),
-  })),
+  links: [],
 };
 
 const INITIAL_STATS: UserStats = {
@@ -56,7 +44,9 @@ const INITIAL_STATS: UserStats = {
 };
 
 interface AppContextType {
-  isLoggedIn: boolean;
+  isInitialized: boolean;
+  hasCompletedSetup: boolean;
+  setHasCompletedSetup: (val: boolean) => void;
   user: UserProfile;
   stats: UserStats;
   liveScanCount: number;
@@ -65,8 +55,6 @@ interface AppContextType {
   /** Optional deployed endpoint URL for tracked sharing (e.g. https://my-app.vercel.app/api/card). */
   trackingUrl: string;
   setTrackingUrl: (url: string) => Promise<void>;
-  login: (email?: string) => Promise<void>;
-  signup: (email?: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updated: Partial<UserProfile>) => Promise<void>;
   addLink: (link: Omit<SocialLink, 'id'>) => Promise<void>;
@@ -74,16 +62,14 @@ interface AppContextType {
   deleteCard: () => Promise<void>;
   fetchLiveScanCount: () => Promise<void>;
   setNfcState: (state: 'idle' | 'writing' | 'success' | 'error') => void;
-  hasCompletedSetup: boolean;
-  setHasCompletedSetup: (val: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn] = useState<boolean>(true);
-  const [hasCompletedSetup, setHasCompletedSetup] = useState<boolean>(true);
-  const [user, setUser] = useState<UserProfile>(INITIAL_PROFILE);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [hasCompletedSetup, setHasCompletedSetup] = useState<boolean>(false);
+  const [user, setUser] = useState<UserProfile>(EMPTY_PROFILE);
   const [stats, setStats] = useState<UserStats>(INITIAL_STATS);
   const [liveScanCount, setLiveScanCount] = useState<number>(0);
   const [isLoadingScans, setIsLoadingScans] = useState<boolean>(true);
@@ -92,15 +78,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     loadStoredData();
-    fetchLiveScanCount();
   }, []);
 
   const loadStoredData = async () => {
     try {
       const storedUser = await AsyncStorage.getItem('@tapshare_user');
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        if (parsed && parsed.name && parsed.name.trim().length > 0) {
+          setUser(parsed);
+          setHasCompletedSetup(true);
+        } else {
+          setHasCompletedSetup(false);
+        }
+      } else {
+        setHasCompletedSetup(false);
       }
+
       // Load persisted tracking URL (may be empty string = tracking off)
       const storedTrackingUrl = await AsyncStorage.getItem('@tapshare_tracking_url');
       if (storedTrackingUrl) {
@@ -108,6 +102,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch (e) {
       console.warn('Failed to load stored data', e);
+      setHasCompletedSetup(false);
+    } finally {
+      setIsInitialized(true);
+      fetchLiveScanCount();
     }
   };
 
@@ -196,17 +194,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const login = async () => {
-    // Single-user MVP: always logged in as owner profile
-  };
-
-  const signup = async () => {
-    // Single-user MVP: always logged in as owner profile
-  };
-
   const logout = async () => {
-    // Reset to default single-user profile
-    setUser(INITIAL_PROFILE);
+    // Reset to empty profile for onboarding
+    setUser(EMPTY_PROFILE);
+    setHasCompletedSetup(false);
     await AsyncStorage.removeItem('@tapshare_user');
   };
 
@@ -245,7 +236,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteCard = async () => {
-    await saveUser(INITIAL_PROFILE);
+    await logout();
   };
 
   const setNfcState = (state: 'idle' | 'writing' | 'success' | 'error') => {
@@ -255,7 +246,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider
       value={{
-        isLoggedIn,
+        isInitialized,
+        hasCompletedSetup,
+        setHasCompletedSetup,
         user,
         stats,
         liveScanCount,
@@ -263,8 +256,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         nfcWriteState,
         trackingUrl,
         setTrackingUrl,
-        login,
-        signup,
         logout,
         updateProfile,
         addLink,
@@ -272,8 +263,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCard,
         fetchLiveScanCount,
         setNfcState,
-        hasCompletedSetup,
-        setHasCompletedSetup,
       }}
     >
       {children}

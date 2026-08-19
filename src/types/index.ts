@@ -50,7 +50,6 @@ export interface UserStats {
 export type RootStackParamList = {
   Splash: undefined;
   GetStarted: undefined;
-  Login: { isSignUp?: boolean } | undefined;
   ProfileSetup: undefined;
   MainTabs: undefined;
   QRCodeReady: undefined;

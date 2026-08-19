@@ -1,21 +1,18 @@
 /**
  * RootNavigator.tsx — Root stack navigator for TapShare.
  *
- * Contains all screens in a single stack. The initial route is 'MainTabs'
- * (the bottom tab navigator with Dashboard, QR Code, Stats, and Settings),
- * since this is a single-user app that doesn't require login.
- *
- * Onboarding screens (Splash, GetStarted, Login, ProfileSetup) are still
- * registered but not the initial route — they can be navigated to if
- * multi-user onboarding is added in the future.
+ * Checks first-run status on mount:
+ *   - Fresh install (no profile in AsyncStorage): Boots into SplashScreen →
+ *     GetStartedScreen → ProfileSetupScreen → QRCodeReadyScreen → MainTabs.
+ *   - Existing install (profile found): Boots straight into MainTabs.
  */
 import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import { SplashScreen } from '../screens/SplashScreen';
 import { GetStartedScreen } from '../screens/GetStartedScreen';
-import { LoginScreen } from '../screens/LoginScreen';
 import { ProfileSetupScreen } from '../screens/ProfileSetupScreen';
 import { BottomTabNavigator } from './BottomTabNavigator';
 import { QRCodeReadyScreen } from '../screens/QRCodeReadyScreen';
@@ -24,14 +21,26 @@ import { NFCTagSharingScreen } from '../screens/NFCTagSharingScreen';
 import { EditProfileScreen } from '../screens/EditProfileScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { StatsScreen } from '../screens/StatsScreen';
+import { useApp } from '../context/AppContext';
+import { COLORS } from '../constants/theme';
 
 const Stack = createStackNavigator();
 
 export const RootNavigator = () => {
+  const { isInitialized, hasCompletedSetup } = useApp();
+
+  if (!isInitialized) {
+    return (
+      <View style={{ flex: 1, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={COLORS.coral} />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="MainTabs"
+        initialRouteName={hasCompletedSetup ? 'MainTabs' : 'Splash'}
         screenOptions={{
           headerShown: false,
           cardStyle: { backgroundColor: '#0D0D0E' },
@@ -39,10 +48,9 @@ export const RootNavigator = () => {
       >
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="GetStarted" component={GetStartedScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
-        <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
         <Stack.Screen name="QRCodeReady" component={QRCodeReadyScreen} />
+        <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
         <Stack.Screen name="QRCodeView" component={QRCodeViewScreen} />
         <Stack.Screen name="NFCTagSharing" component={NFCTagSharingScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />

@@ -6,23 +6,21 @@ import { DualCardLogo } from '../components/DualCardLogo';
 import { useApp } from '../context/AppContext';
 
 export const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { isLoggedIn, hasCompletedSetup } = useApp();
+  const { isInitialized, hasCompletedSetup } = useApp();
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     const timer = setTimeout(() => {
-      if (isLoggedIn) {
-        if (hasCompletedSetup) {
-          navigation.replace('MainTabs');
-        } else {
-          navigation.replace('ProfileSetup');
-        }
+      if (hasCompletedSetup) {
+        navigation.replace('MainTabs');
       } else {
         navigation.replace('GetStarted');
       }
-    }, 1800);
+    }, 1200);
 
     return () => clearTimeout(timer);
-  }, [isLoggedIn, hasCompletedSetup]);
+  }, [isInitialized, hasCompletedSetup]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>

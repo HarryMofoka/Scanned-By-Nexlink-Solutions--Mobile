@@ -99,7 +99,6 @@ A lightweight Vercel serverless function is included for **tracked sharing**:
 │   │   ├── DashboardScreen.tsx       # Main hub: QR preview, NFC shortcut, scan stats
 │   │   ├── EditProfileScreen.tsx     # Edit name, phone, and social links
 │   │   ├── GetStartedScreen.tsx      # Onboarding welcome screen
-│   │   ├── LoginScreen.tsx           # Login/signup screen (single-user MVP)
 │   │   ├── NFCTagSharingScreen.tsx   # NFC tag writing flow with state animations
 │   │   ├── ProfileSetupScreen.tsx    # Initial profile setup after onboarding
 │   │   ├── QRCodeReadyScreen.tsx     # "Your QR code is ready!" celebration screen

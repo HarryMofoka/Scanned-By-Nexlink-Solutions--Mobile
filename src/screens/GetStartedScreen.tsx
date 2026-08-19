@@ -74,25 +74,13 @@ export const GetStartedScreen: React.FC<{ navigation: any }> = ({ navigation }) 
         </View>
       </ScrollView>
 
-      {/* Footer Buttons & Pagination */}
+      {/* Footer Buttons & Action */}
       <View style={styles.footerContainer}>
         <CustomButton
-          title="Get started"
-          onPress={() => navigation.navigate('Login', { isSignUp: true })}
+          title="Set up my card"
+          onPress={() => navigation.navigate('ProfileSetup')}
           variant="primary"
         />
-
-        <CustomButton
-          title="Log in"
-          onPress={() => navigation.navigate('Login', { isSignUp: false })}
-          variant="secondary"
-        />
-
-        <View style={styles.paginationRow}>
-          <View style={[styles.pageDot, { backgroundColor: COLORS.coral, width: 10 }]} />
-          <View style={styles.pageDot} />
-          <View style={styles.pageDot} />
-        </View>
       </View>
       </View>
     </SafeAreaView>
